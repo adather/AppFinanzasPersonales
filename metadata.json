@@ -1,0 +1,10 @@
+{
+  "name": "Agente de Análisis Financiero Personal",
+  "description": "Agente experto en análisis financiero personal y behavioral economics para entender patrones de gasto, detectar anomalías estadísticas y optimizar el ahorro.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
