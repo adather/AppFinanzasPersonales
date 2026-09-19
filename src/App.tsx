@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
-  Sparkles,
   Camera,
   Mic,
   Plus,
@@ -448,76 +447,70 @@ export default function App() {
   };
 
   return (
-    <div id="financial-agent-app" className="min-h-screen bg-slate-100/70 text-slate-800 dark:bg-slate-950 dark:text-slate-100 flex flex-col transition-colors duration-200">
-      {/* Top Application Bar */}
-      <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-2xs transition-colors duration-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-slate-900 dark:bg-slate-800 text-white flex items-center justify-center shadow-xs">
-              <Sparkles className="w-5 h-5 text-emerald-400" />
+    <div id="financial-agent-app" className="min-h-screen bg-paper text-ink flex flex-col transition-colors duration-200">
+      {/* Statement Header */}
+      <header className="sticky top-0 z-40 bg-paper/95 backdrop-blur-md border-b border-rule transition-colors duration-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+          <div>
+            <div className="flex items-baseline gap-2.5 flex-wrap">
+              <h1 className="font-display text-2xl text-ink tracking-tight">
+                Agente de Análisis Financiero
+              </h1>
+              <span className="text-xs text-ink-muted">economía conductual & estadística de gasto</span>
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">
-                  Agente de Análisis Financiero
-                </h1>
-                <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/50 px-2 py-0.5 rounded-md">
-                  Behavioral Economics
-                </span>
-              </div>
-              <p className="text-xs text-slate-400 dark:text-slate-500 hidden sm:block">
-                Patrones de gasto, detección de anomalías (&gt;2σ) e insights accionables
-              </p>
-            </div>
+            <p className="text-xs text-ink-muted mt-1">
+              Patrones de gasto, detección de anomalías (&gt;2σ) e insights accionables
+            </p>
           </div>
 
           {/* Header Action Buttons */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <button
               id="open-model-selector-header-btn"
               onClick={() => setIsModelSelectorOpen(true)}
-              className="px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              className="px-2.5 py-1.5 text-xs text-ink-muted hover:text-ink border border-rule hover:border-ink/40 rounded-md transition flex items-center gap-1.5 cursor-pointer"
               title="Cambiar el modelo de Inteligencia Artificial (Gemini)"
             >
-              <Cpu className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
-              <span className="hidden lg:inline text-slate-400 dark:text-slate-500 font-normal">IA:</span>
-              <span className="font-bold text-slate-800 dark:text-slate-200">{currentModelMeta.shortName}</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 ml-0.5" />
+              <Cpu className="w-3.5 h-3.5" />
+              <span className="hidden lg:inline">IA:</span>
+              <span className="font-semibold text-ink">{currentModelMeta.shortName}</span>
             </button>
 
             <button
               id="toggle-theme-btn"
               onClick={() => setTheme((prev) => (prev === 'light' ? 'dark' : 'light'))}
-              className="p-1.5 text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-xl transition flex items-center justify-center cursor-pointer shadow-2xs"
+              className="p-1.5 text-ink-muted hover:text-ink border border-rule hover:border-ink/40 rounded-md transition flex items-center justify-center cursor-pointer"
               title={theme === 'light' ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro'}
             >
-              {theme === 'light' ? <Moon className="w-4 h-4 text-slate-600" /> : <Sun className="w-4 h-4 text-amber-400" />}
+              {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
             </button>
+
+            <span className="w-px h-5 bg-rule mx-1" />
 
             <button
               id="open-receipt-modal-btn"
               onClick={() => setIsReceiptModalOpen(true)}
-              className="px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-900/50 rounded-xl transition flex items-center gap-1.5 cursor-pointer"
+              className="px-2.5 py-1.5 text-xs font-medium text-ink hover:text-gain border border-rule hover:border-gain/50 rounded-md transition flex items-center gap-1.5 cursor-pointer"
               title="Escanear ticket o recibo con IA"
             >
-              <Camera className="w-3.5 h-3.5 text-emerald-600" />
+              <Camera className="w-3.5 h-3.5" />
               <span className="hidden md:inline">Escanear</span> Recibo
             </button>
 
             <button
               id="open-verbal-modal-btn"
               onClick={() => setIsVerbalModalOpen(true)}
-              className="px-3 py-1.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl transition flex items-center gap-1.5"
+              className="px-2.5 py-1.5 text-xs font-medium text-ink hover:text-gain border border-rule hover:border-gain/50 rounded-md transition flex items-center gap-1.5 cursor-pointer"
               title="Dictar o escribir gasto en lenguaje natural"
             >
-              <Mic className="w-3.5 h-3.5 text-blue-600" />
+              <Mic className="w-3.5 h-3.5" />
               <span className="hidden md:inline">Gasto</span> Verbal
             </button>
 
             <button
               id="open-add-modal-btn"
               onClick={() => setIsAddModalOpen(true)}
-              className="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition flex items-center gap-1.5"
+              className="px-2.5 py-1.5 text-xs font-medium text-ink hover:text-ink border border-rule hover:border-ink/40 rounded-md transition flex items-center gap-1.5 cursor-pointer"
               title="Agregar gasto manual"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -530,9 +523,9 @@ export default function App() {
                 setAdvisorInitialPrompt(undefined);
                 setIsAdvisorChatOpen(true);
               }}
-              className="px-3.5 py-1.5 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-xl shadow-xs transition flex items-center gap-1.5"
+              className="px-3 py-1.5 text-xs font-semibold text-paper bg-ink hover:bg-ink/85 rounded-md transition flex items-center gap-1.5 cursor-pointer"
             >
-              <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
+              <MessageSquare className="w-3.5 h-3.5 text-insight" />
               <span>Asesor IA</span>
             </button>
           </div>
@@ -541,41 +534,35 @@ export default function App() {
 
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* KPI Metric Strip */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+        {/* Statement Summary Row */}
+        <div className="grid grid-cols-2 md:grid-cols-4 divide-y divide-x-0 md:divide-y-0 md:divide-x divide-rule border border-rule rounded-md overflow-hidden">
           {/* Total Spent */}
-          <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800/80 shadow-2xs transition-colors duration-200">
-            <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">
-              Gasto Acumulado
-            </span>
-            <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white font-mono mt-1">
+          <div className="p-4">
+            <span className="text-xs text-ink-muted block">Gasto acumulado</span>
+            <div className="font-display text-2xl text-ink mt-1">
               ${totalSpent.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
             </div>
-            <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1">
-              <span>Presupuesto:</span>
-              <span className="font-semibold text-slate-700 dark:text-slate-300 font-mono">${totalBudget.toLocaleString('es-MX')}</span>
+            <div className="text-xs text-ink-muted mt-1 font-mono">
+              presupuesto ${totalBudget.toLocaleString('es-MX')}
             </div>
           </div>
 
           {/* Budget Consumption */}
-          <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800/80 shadow-2xs transition-colors duration-200">
-            <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">
-              % del Presupuesto
-            </span>
+          <div className="p-4">
+            <span className="text-xs text-ink-muted block">% del presupuesto</span>
             <div className="flex items-baseline gap-2 mt-1">
               <span
-                className={`text-xl sm:text-2xl font-black font-mono ${
-                  (totalSpent / totalBudget) > 1 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-white'
+                className={`font-display text-2xl ${
+                  (totalSpent / totalBudget) > 1 ? 'text-loss' : 'text-ink'
                 }`}
               >
                 {((totalSpent / totalBudget) * 100).toFixed(1)}%
               </span>
-              <span className="text-xs text-slate-400 dark:text-slate-500">utilizado</span>
             </div>
-            <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full mt-2 overflow-hidden">
+            <div className="w-full h-1 bg-rule mt-2.5 overflow-hidden">
               <div
-                className={`h-full rounded-full ${
-                  (totalSpent / totalBudget) > 1 ? 'bg-rose-500 dark:bg-rose-600' : 'bg-emerald-500 dark:bg-emerald-600'
+                className={`h-full ${
+                  (totalSpent / totalBudget) > 1 ? 'bg-loss' : 'bg-gain'
                 }`}
                 style={{ width: `${Math.min((totalSpent / totalBudget) * 100, 100)}%` }}
               />
@@ -583,28 +570,26 @@ export default function App() {
           </div>
 
           {/* Statistical Anomalies Detected */}
-          <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800/80 shadow-2xs transition-colors duration-200">
-            <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block flex items-center justify-between">
+          <div className="p-4">
+            <span className="text-xs text-ink-muted block flex items-center justify-between">
               <span>Anomalías (&gt;{anomalyThreshold.toFixed(1)}σ)</span>
-              <AlertTriangle className="w-3.5 h-3.5 text-rose-500 dark:text-rose-400" />
+              <AlertTriangle className="w-3.5 h-3.5 text-loss" />
             </span>
-            <div className="text-xl sm:text-2xl font-black text-rose-600 dark:text-rose-400 font-mono mt-1">
+            <div className="font-display text-2xl text-loss mt-1">
               {detectedAnomalies.length}
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              Puntaje Z &gt; 2.0 respecto a la media
+            <p className="text-xs text-ink-muted mt-1">
+              puntaje Z &gt; 2.0 respecto a la media
             </p>
           </div>
 
           {/* Comparison vs Previous Month */}
-          <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800/80 shadow-2xs transition-colors duration-200">
-            <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">
-              vs. Mes Anterior
-            </span>
+          <div className="p-4">
+            <span className="text-xs text-ink-muted block">vs. mes anterior</span>
             <div className="flex items-baseline gap-1.5 mt-1">
               <span
-                className={`text-xl sm:text-2xl font-black font-mono ${
-                  totalSpent > totalPreviousSpent ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'
+                className={`font-display text-2xl ${
+                  totalSpent > totalPreviousSpent ? 'text-loss' : 'text-gain'
                 }`}
               >
                 {totalSpent > totalPreviousSpent ? '+' : ''}
@@ -613,53 +598,44 @@ export default function App() {
                   : 0}
                 %
               </span>
-              <span className="text-xs text-slate-400 dark:text-slate-500 font-mono">
-                (${totalPreviousSpent.toLocaleString('es-MX')})
-              </span>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              {totalSpent > totalPreviousSpent ? 'Incremento en el periodo' : 'Contención favorable de gasto'}
+            <p className="text-xs text-ink-muted mt-1">
+              {totalSpent > totalPreviousSpent ? 'incremento en el periodo' : 'contención favorable de gasto'}
             </p>
           </div>
         </div>
 
         {/* Tab Navigation Controls */}
-        <div className="flex items-center justify-between border-b border-slate-200/90 dark:border-slate-800 pb-2 transition-colors duration-200">
-          <nav className="flex items-center gap-1 sm:gap-2 overflow-x-auto">
+        <div className="flex items-center justify-between border-b border-rule transition-colors duration-200">
+          <nav className="flex items-center gap-4 sm:gap-6 overflow-x-auto">
             <button
               id="tab-executive-btn"
               type="button"
               onClick={() => setActiveTab('executive')}
-              className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+              className={`pb-2.5 -mb-px text-xs sm:text-sm font-medium transition flex items-center gap-2 whitespace-nowrap cursor-pointer border-b-2 ${
                 activeTab === 'executive'
-                  ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-900/40'
+                  ? 'text-ink border-ink'
+                  : 'text-ink-muted border-transparent hover:text-ink'
               }`}
             >
               <BarChart3 className="w-4 h-4" />
-              <span>Análisis Ejecutivo & Behavioral</span>
+              <span>Análisis ejecutivo & behavioral</span>
             </button>
 
             <button
               id="tab-anomalies-btn"
               type="button"
               onClick={() => setActiveTab('anomalies')}
-              className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+              className={`pb-2.5 -mb-px text-xs sm:text-sm font-medium transition flex items-center gap-2 whitespace-nowrap cursor-pointer border-b-2 ${
                 activeTab === 'anomalies'
-                  ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-900/40'
+                  ? 'text-ink border-ink'
+                  : 'text-ink-muted border-transparent hover:text-ink'
               }`}
             >
-              <AlertTriangle className="w-4 h-4 text-rose-500 dark:text-rose-400" />
-              <span>Detector de Anomalías (&gt;2σ)</span>
+              <AlertTriangle className="w-4 h-4 text-loss" />
+              <span>Detector de anomalías (&gt;2σ)</span>
               {detectedAnomalies.length > 0 && (
-                <span
-                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                    activeTab === 'anomalies'
-                      ? 'bg-rose-500 dark:bg-rose-600 text-white'
-                      : 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300'
-                  }`}
-                >
+                <span className="text-[10px] font-semibold px-1.5 rounded-sm bg-loss/10 text-loss">
                   {detectedAnomalies.length}
                 </span>
               )}
@@ -669,38 +645,38 @@ export default function App() {
               id="tab-patterns-btn"
               type="button"
               onClick={() => setActiveTab('patterns')}
-              className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+              className={`pb-2.5 -mb-px text-xs sm:text-sm font-medium transition flex items-center gap-2 whitespace-nowrap cursor-pointer border-b-2 ${
                 activeTab === 'patterns'
-                  ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-900/40'
+                  ? 'text-ink border-ink'
+                  : 'text-ink-muted border-transparent hover:text-ink'
               }`}
             >
-              <TrendingUp className="w-4 h-4 text-amber-500 dark:text-amber-400" />
-              <span>Visualizaciones & Patrones</span>
+              <TrendingUp className="w-4 h-4 text-insight" />
+              <span>Visualizaciones & patrones</span>
             </button>
 
             <button
               id="tab-goals-btn"
               type="button"
               onClick={() => setActiveTab('goals')}
-              className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+              className={`pb-2.5 -mb-px text-xs sm:text-sm font-medium transition flex items-center gap-2 whitespace-nowrap cursor-pointer border-b-2 ${
                 activeTab === 'goals'
-                  ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-900/40'
+                  ? 'text-ink border-ink'
+                  : 'text-ink-muted border-transparent hover:text-ink'
               }`}
             >
-              <Target className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
-              <span>Metas de Ahorro ({savingsGoals.length})</span>
+              <Target className="w-4 h-4 text-gain" />
+              <span>Metas de ahorro ({savingsGoals.length})</span>
             </button>
 
             <button
               id="tab-transactions-btn"
               type="button"
               onClick={() => setActiveTab('transactions')}
-              className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+              className={`pb-2.5 -mb-px text-xs sm:text-sm font-medium transition flex items-center gap-2 whitespace-nowrap cursor-pointer border-b-2 ${
                 activeTab === 'transactions'
-                  ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-900/40'
+                  ? 'text-ink border-ink'
+                  : 'text-ink-muted border-transparent hover:text-ink'
               }`}
             >
               <ListOrdered className="w-4 h-4" />
@@ -712,11 +688,11 @@ export default function App() {
             id="reset-demo-data-btn"
             type="button"
             onClick={handleResetDemoData}
-            className="hidden sm:flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 px-3 py-1.5 rounded-lg hover:bg-slate-200/60 dark:hover:bg-slate-900 transition cursor-pointer"
+            className="hidden sm:flex items-center gap-1.5 text-xs text-ink-muted hover:text-ink pb-2.5 transition cursor-pointer"
             title="Restablecer datos de ejemplo con anomalías estadísticas"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span>Datos Demo</span>
+            <span>Datos demo</span>
           </button>
         </div>
 

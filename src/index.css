@@ -2,11 +2,59 @@
 
 @variant dark (&:where(.dark, .dark *));
 
+/*
+  Ledger palette: grounded in accounting-ledger paper and ink-stamp
+  conventions rather than generic SaaS card colors. Defined as plain
+  CSS variables (swapped under .dark) so Tailwind's @theme tokens
+  below stay reactive to the theme toggle.
+*/
+:root {
+  --paper: #e9eee4;
+  --surface: #f4f6ef;
+  --ink: #1f2a24;
+  --ink-muted: #5b6459;
+  --rule: #c9d0c2;
+  --loss: #a23b2e;
+  --gain: #2f6b4f;
+  --insight: #b8862e;
+}
+
+.dark {
+  --paper: #141812;
+  --surface: #1a2018;
+  --ink: #e7e8dd;
+  --ink-muted: #9aa392;
+  --rule: #2c3327;
+  --loss: #d9695a;
+  --gain: #5fa37e;
+  --insight: #d9a94b;
+}
+
+@theme {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-rule: var(--rule);
+  --color-loss: var(--loss);
+  --color-gain: var(--gain);
+  --color-insight: var(--insight);
+
+  --font-display: 'Fraunces', ui-serif, Georgia, serif;
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+}
+
 @layer base {
   html {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
   }
 }
