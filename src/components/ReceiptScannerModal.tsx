@@ -179,22 +179,22 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
 
   return (
     <div id="receipt-modal-backdrop" className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto">
-      <div id="receipt-modal-card" className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl overflow-hidden my-8 transition-colors">
+      <div id="receipt-modal-card" className="bg-paper rounded-lg shadow-xl border border-rule w-full max-w-2xl overflow-hidden my-8 transition-colors">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/40">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-rule">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-md border border-rule text-insight flex items-center justify-center">
               <Camera className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-slate-800 dark:text-white text-lg">Escanear Recibo con IA</h3>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-400 border border-transparent dark:border-emerald-900/20">
-                  <Sparkles className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                <h3 className="font-display text-lg text-ink">Escanear Recibo con IA</h3>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] text-ink-muted border border-rule">
+                  <Sparkles className="w-3 h-3 text-insight" />
                   {modelMeta.name}
                 </span>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-ink-muted">
                 Extracción multimodal de fecha, concepto, cantidad y categorización
               </p>
             </div>
@@ -202,7 +202,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
           <button
             id="close-receipt-modal-btn"
             onClick={onClose}
-            className="p-2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+            className="p-2 text-ink-muted hover:text-ink rounded-md hover:bg-surface transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -216,7 +216,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
               onDragOver={(e) => e.preventDefault()}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-emerald-500 rounded-xl p-8 text-center cursor-pointer transition bg-slate-50/50 dark:bg-slate-950/45 hover:bg-emerald-50/20 dark:hover:bg-emerald-950/10 group"
+              className="border border-dashed border-rule hover:border-ink/40 rounded-md p-8 text-center cursor-pointer transition group"
             >
               <input
                 type="file"
@@ -225,20 +225,20 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                 accept="image/*"
                 className="hidden"
               />
-              <div className="w-16 h-16 rounded-full bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto mb-4 group-hover:scale-105 transition">
+              <div className="w-16 h-16 rounded-md border border-rule text-ink-muted flex items-center justify-center mx-auto mb-4 group-hover:text-ink transition">
                 <Upload className="w-7 h-7" />
               </div>
-              <p className="font-semibold text-slate-700 dark:text-slate-200 mb-1">
+              <p className="font-medium text-ink mb-1">
                 Haz clic para subir o arrastra la foto del recibo
               </p>
-              <p className="text-xs text-slate-400 dark:text-slate-500">
+              <p className="text-xs text-ink-muted">
                 Soporta tickets de supermercado, facturas, restaurantes, gasolineras (JPG, PNG, WebP)
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Preview image */}
-              <div className="relative rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-900/5 dark:bg-slate-950/30 max-h-72 flex items-center justify-center">
+              <div className="relative rounded-md overflow-hidden border border-rule max-h-72 flex items-center justify-center">
                 <img
                   src={imagePreview}
                   alt="Recibo"
@@ -248,7 +248,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                 <button
                   id="reset-receipt-img-btn"
                   onClick={handleReset}
-                  className="absolute top-2 right-2 bg-slate-900/70 hover:bg-slate-900 text-white p-1.5 rounded-lg text-xs flex items-center gap-1 transition cursor-pointer"
+                  className="absolute top-2 right-2 bg-ink/80 hover:bg-ink text-paper p-1.5 rounded-md text-xs flex items-center gap-1 transition cursor-pointer"
                 >
                   <RefreshCw className="w-3.5 h-3.5" /> Cambiar foto
                 </button>
@@ -258,72 +258,72 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
               <div className="flex flex-col justify-between">
                 {isAnalyzing ? (
                   <div className="flex flex-col items-center justify-center h-full py-8 text-center space-y-3">
-                    <Loader2 className="w-8 h-8 text-emerald-600 dark:text-emerald-400 animate-spin" />
-                    <p className="font-medium text-slate-700 dark:text-slate-300 text-sm">
-                      Analizando recibo con Gemini 3.8 Flash...
+                    <Loader2 className="w-8 h-8 text-insight animate-spin" />
+                    <p className="font-medium text-ink-muted text-sm">
+                      Analizando recibo con {modelMeta.name}...
                     </p>
-                    <p className="text-xs text-slate-400 dark:text-slate-500 max-w-xs">
+                    <p className="text-xs text-ink-muted max-w-xs">
                       Extrayendo fecha, establecimiento, desglose de montos y categorización conductual.
                     </p>
                   </div>
                 ) : extractedData ? (
                   <div className="space-y-3 text-left">
-                    <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-md w-fit">
+                    <div className="flex items-center gap-1.5 text-xs text-gain w-fit">
                       <Check className="w-3.5 h-3.5" /> Datos detectados con éxito
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Concepto / Tienda</label>
+                      <label className="block text-xs text-ink-muted mb-1">Concepto / Tienda</label>
                       <input
                         type="text"
                         value={extractedData.concepto}
                         onChange={(e) => setExtractedData({ ...extractedData, concepto: e.target.value })}
-                        className="w-full text-sm font-medium px-3 py-1.5 border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                        className="w-full text-sm font-medium px-3 py-1.5 border border-rule bg-paper text-ink rounded-md focus:ring-1 focus:ring-ink focus:outline-none"
                       />
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Monto Total ($)</label>
+                        <label className="block text-xs text-ink-muted mb-1">Monto Total ($)</label>
                         <input
                           type="number"
                           step="0.01"
                           value={extractedData.cantidad}
                           onChange={(e) => setExtractedData({ ...extractedData, cantidad: parseFloat(e.target.value) || 0 })}
-                          className="w-full text-sm font-semibold text-slate-800 dark:text-slate-100 px-3 py-1.5 border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-950 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                          className="w-full text-sm font-mono text-ink px-3 py-1.5 border border-rule bg-paper rounded-md focus:ring-1 focus:ring-ink focus:outline-none"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Fecha</label>
+                        <label className="block text-xs text-ink-muted mb-1">Fecha</label>
                         <input
                           type="date"
                           value={extractedData.fecha}
                           onChange={(e) => setExtractedData({ ...extractedData, fecha: e.target.value })}
-                          className="w-full text-sm px-3 py-1.5 border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                          className="w-full text-sm px-3 py-1.5 border border-rule bg-paper text-ink rounded-md focus:ring-1 focus:ring-ink focus:outline-none"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Categoría</label>
+                      <label className="block text-xs text-ink-muted mb-1">Categoría</label>
                       <select
                         value={extractedData.categoria}
                         onChange={(e) => setExtractedData({ ...extractedData, categoria: e.target.value as CategoryName })}
-                        className="w-full text-sm px-3 py-1.5 border border-slate-300 dark:border-slate-800 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100"
+                        className="w-full text-sm px-3 py-1.5 border border-rule rounded-md focus:ring-1 focus:ring-ink focus:outline-none bg-paper text-ink"
                       >
                         {CATEGORIES.map((cat) => (
-                          <option key={cat} value={cat} className="bg-white dark:bg-slate-900">{cat}</option>
+                          <option key={cat} value={cat} className="bg-paper">{cat}</option>
                         ))}
                       </select>
                     </div>
 
                     {extractedData.desglose && extractedData.desglose.length > 0 && (
-                      <div className="p-2.5 bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-200/80 dark:border-slate-800/80">
-                        <div className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-1 mb-1">
-                          <FileText className="w-3 h-3 text-slate-400" /> Ítems detectados
+                      <div className="p-2.5 border border-rule rounded-md">
+                        <div className="text-[11px] text-ink-muted flex items-center gap-1 mb-1">
+                          <FileText className="w-3 h-3" /> Ítems detectados
                         </div>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
-                          {extractedData.desglose.join(' • ')}
+                        <p className="text-xs text-ink-muted line-clamp-2">
+                          {extractedData.desglose.join(', ')}
                         </p>
                       </div>
                     )}
@@ -334,11 +334,11 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
           )}
 
           {error && (
-            <div className="p-3.5 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/60 rounded-xl text-rose-700 dark:text-rose-300 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="p-3.5 border border-loss/30 rounded-md text-loss text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-start gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-semibold block sm:inline mr-1">Aviso del servicio:</span>
+                  <span className="font-medium block sm:inline mr-1">Aviso del servicio:</span>
                   <span>{error}</span>
                 </div>
               </div>
@@ -347,7 +347,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                   type="button"
                   id="retry-receipt-analysis-btn"
                   onClick={handleRetry}
-                  className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-medium text-xs flex items-center justify-center gap-1.5 shrink-0 transition shadow-2xs cursor-pointer"
+                  className="px-3 py-1.5 border border-loss/40 text-loss hover:bg-loss/10 rounded-md font-medium text-xs flex items-center justify-center gap-1.5 shrink-0 transition cursor-pointer"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
                   Reintentar análisis
@@ -358,12 +358,12 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40">
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-rule">
           <button
             id="cancel-receipt-btn"
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition cursor-pointer"
+            className="px-4 py-2 text-sm font-medium border border-rule text-ink-muted hover:text-ink rounded-md transition cursor-pointer"
           >
             Cancelar
           </button>
@@ -373,7 +373,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
               type="button"
               disabled={isAnalyzing || extractedData.cantidad <= 0}
               onClick={handleConfirm}
-              className="px-5 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 rounded-xl shadow-xs transition flex items-center gap-2 cursor-pointer"
+              className="px-5 py-2 text-sm font-medium text-paper bg-ink hover:bg-ink/85 disabled:opacity-50 rounded-md transition flex items-center gap-2 cursor-pointer"
             >
               <Check className="w-4 h-4" /> Guardar Transacción
             </button>

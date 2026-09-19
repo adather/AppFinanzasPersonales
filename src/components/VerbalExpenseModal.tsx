@@ -181,22 +181,22 @@ export const VerbalExpenseModal: React.FC<VerbalExpenseModalProps> = ({
 
   return (
     <div id="verbal-modal-backdrop" className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto">
-      <div id="verbal-modal-card" className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-xl overflow-hidden my-8 transition-colors">
+      <div id="verbal-modal-card" className="bg-paper rounded-lg shadow-xl border border-rule w-full max-w-xl overflow-hidden my-8 transition-colors">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/40">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-rule">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-md border border-rule text-insight flex items-center justify-center">
               <Mic className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-slate-800 dark:text-white text-lg">Registro de Gasto Verbal o Rápido</h3>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-blue-100 dark:bg-blue-950/40 text-blue-800 dark:text-blue-400 border border-transparent dark:border-blue-900/20">
-                  <Sparkles className="w-3 h-3 text-blue-600 dark:text-blue-400" />
+                <h3 className="font-display text-lg text-ink">Registro de Gasto Verbal o Rápido</h3>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] text-ink-muted border border-rule">
+                  <Sparkles className="w-3 h-3 text-insight" />
                   {modelMeta.name}
                 </span>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-ink-muted">
                 Dicta o escribe en tus propias palabras; el agente solicitará detalles si faltan
               </p>
             </div>
@@ -204,7 +204,7 @@ export const VerbalExpenseModal: React.FC<VerbalExpenseModalProps> = ({
           <button
             id="close-verbal-modal-btn"
             onClick={onClose}
-            className="p-2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+            className="p-2 text-ink-muted hover:text-ink rounded-md hover:bg-surface transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -214,27 +214,33 @@ export const VerbalExpenseModal: React.FC<VerbalExpenseModalProps> = ({
         <div className="p-6 space-y-4">
           {/* Conversational timeline */}
           {conversationHistory.length > 0 ? (
-            <div className="space-y-3 max-h-56 overflow-y-auto p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200/70 dark:border-slate-800/80">
+            <div className="space-y-3 max-h-56 overflow-y-auto p-3 border border-rule rounded-md">
               {conversationHistory.map((item, idx) => (
                 <div
                   key={idx}
                   className={`flex ${item.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm ${
+                    className={`max-w-[85%] rounded-md px-4 py-2.5 text-sm ${
                       item.role === 'user'
-                        ? 'bg-blue-600 text-white rounded-br-xs'
-                        : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800/80 shadow-2xs rounded-bl-xs'
+                        ? 'bg-ink text-paper'
+                        : 'bg-paper text-ink border border-rule'
                     }`}
                   >
+                    {item.role === 'agent' && (
+                      <div className="flex items-center gap-1.5 text-[10px] text-insight mb-1">
+                        <Sparkles className="w-3 h-3" />
+                        Agente IA
+                      </div>
+                    )}
                     {item.text}
                   </div>
                 </div>
               ))}
               {isProcessing && (
                 <div className="flex justify-start">
-                  <div className="bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800/80 flex items-center gap-2">
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600 dark:text-blue-400" />
+                  <div className="bg-paper text-ink-muted text-xs px-3 py-2 rounded-md border border-rule flex items-center gap-2">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-insight" />
                     Interpretando detalles...
                   </div>
                 </div>
@@ -242,7 +248,7 @@ export const VerbalExpenseModal: React.FC<VerbalExpenseModalProps> = ({
             </div>
           ) : (
             <div className="space-y-2">
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              <p className="text-xs text-ink-muted">
                 Ejemplos que puedes probar o dictar:
               </p>
               <div className="grid grid-cols-1 gap-1.5">
@@ -254,10 +260,10 @@ export const VerbalExpenseModal: React.FC<VerbalExpenseModalProps> = ({
                       setInputText(ex);
                       handleSend(ex);
                     }}
-                    className="text-left text-xs text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-950 hover:bg-blue-50/70 dark:hover:bg-blue-950/30 hover:text-blue-700 dark:hover:text-blue-400 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 transition flex items-center justify-between group cursor-pointer"
+                    className="text-left text-xs text-ink-muted hover:text-ink border border-rule hover:border-ink/40 rounded-md px-3 py-2 transition flex items-center justify-between group cursor-pointer"
                   >
                     <span>"{ex}"</span>
-                    <Sparkles className="w-3 h-3 text-slate-400 dark:text-slate-500 group-hover:text-blue-500 dark:group-hover:text-blue-400 opacity-0 group-hover:opacity-100 transition" />
+                    <Sparkles className="w-3 h-3 text-insight opacity-0 group-hover:opacity-100 transition" />
                   </button>
                 ))}
               </div>
@@ -266,42 +272,42 @@ export const VerbalExpenseModal: React.FC<VerbalExpenseModalProps> = ({
 
           {/* Missing details indicator */}
           {missingPrompt && (
-            <div className="p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 rounded-xl flex items-start gap-2 text-amber-800 dark:text-amber-400">
-              <HelpCircle className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
+            <div className="p-3 border border-insight/30 rounded-md flex items-start gap-2 text-ink">
+              <HelpCircle className="w-4 h-4 shrink-0 text-insight mt-0.5" />
               <div>
-                <span className="font-semibold">Detalles requeridos: </span>
-                <span>{missingPrompt}</span>
+                <span className="font-medium">Detalles requeridos: </span>
+                <span className="text-ink-muted">{missingPrompt}</span>
               </div>
             </div>
           )}
 
           {/* Extracted Proposal Confirmation Card */}
           {proposal && (
-            <div className="p-4 bg-emerald-50/80 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 rounded-xl space-y-3">
+            <div className="p-4 border border-rule rounded-md space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-emerald-800 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> Transacción Lista para Registrar
+                <span className="text-xs text-gain flex items-center gap-1.5">
+                  <Check className="w-4 h-4" /> Transacción lista para registrar
                 </span>
-                <span className="text-lg font-bold text-emerald-700 dark:text-emerald-400">
+                <span className="font-display text-xl text-ink">
                   ${proposal.cantidad.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
                 </span>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-xs text-slate-700 dark:text-slate-300">
+              <div className="grid grid-cols-2 gap-3 text-xs border-t border-rule pt-3">
                 <div>
-                  <span className="text-slate-400 dark:text-slate-500 block">Concepto:</span>
-                  <span className="font-medium text-slate-800 dark:text-slate-200">{proposal.concepto}</span>
+                  <span className="text-ink-muted block mb-0.5">Concepto</span>
+                  <span className="text-ink">{proposal.concepto}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 dark:text-slate-500 block">Categoría:</span>
-                  <span className="font-medium text-slate-800 dark:text-slate-200">{proposal.categoria}</span>
+                  <span className="text-ink-muted block mb-0.5">Categoría</span>
+                  <span className="text-ink">{proposal.categoria}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 dark:text-slate-500 block">Lugar / Comercio:</span>
-                  <span className="font-medium text-slate-800 dark:text-slate-200">{proposal.lugar}</span>
+                  <span className="text-ink-muted block mb-0.5">Lugar / Comercio</span>
+                  <span className="text-ink">{proposal.lugar}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 dark:text-slate-500 block">Fecha:</span>
-                  <span className="font-medium text-slate-800 dark:text-slate-200">{proposal.fecha}</span>
+                  <span className="text-ink-muted block mb-0.5">Fecha</span>
+                  <span className="font-mono text-ink">{proposal.fecha}</span>
                 </div>
               </div>
             </div>
@@ -313,14 +319,21 @@ export const VerbalExpenseModal: React.FC<VerbalExpenseModalProps> = ({
               id="toggle-mic-btn"
               type="button"
               onClick={toggleRecording}
-              className={`p-3 rounded-xl transition shrink-0 cursor-pointer ${
+              className={`p-3 rounded-md border transition shrink-0 cursor-pointer ${
                 isRecording
-                  ? 'bg-rose-600 text-white animate-pulse shadow-md shadow-rose-200 dark:shadow-none'
-                  : 'bg-slate-100 dark:bg-slate-850 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800'
+                  ? 'border-loss/40 text-loss'
+                  : 'border-rule text-ink-muted hover:text-ink'
               }`}
               title={isRecording ? 'Detener grabación' : 'Dictar por voz'}
             >
-              {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+              {isRecording ? (
+                <span className="relative flex items-center justify-center">
+                  <span className="absolute w-2 h-2 rounded-full bg-loss animate-pulse -top-1 -right-1" />
+                  <MicOff className="w-5 h-5" />
+                </span>
+              ) : (
+                <Mic className="w-5 h-5" />
+              )}
             </button>
             <input
               id="verbal-expense-input"
@@ -338,21 +351,21 @@ export const VerbalExpenseModal: React.FC<VerbalExpenseModalProps> = ({
                   ? 'Responde con la fecha, monto o lugar que faltan...'
                   : 'Ej: "Ayer pagué 350 de súper en Walmart"...'
               }
-              className="flex-1 px-4 py-2.5 text-sm border border-slate-300 dark:border-slate-850 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="flex-1 px-4 py-2.5 text-sm border border-rule bg-paper text-ink rounded-md focus:ring-1 focus:ring-ink focus:outline-none"
             />
             <button
               id="send-verbal-expense-btn"
               type="button"
               disabled={!inputText.trim() || isProcessing}
               onClick={() => handleSend()}
-              className="p-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white rounded-xl transition shrink-0 cursor-pointer"
+              className="p-2.5 bg-ink hover:bg-ink/85 disabled:opacity-40 text-paper rounded-md transition shrink-0 cursor-pointer"
             >
               <Send className="w-4 h-4" />
             </button>
           </div>
 
           {error && (
-            <div className="p-3 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/60 rounded-xl text-rose-700 dark:text-rose-300 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="p-3 border border-loss/30 rounded-md text-loss text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{error}</span>
@@ -367,7 +380,7 @@ export const VerbalExpenseModal: React.FC<VerbalExpenseModalProps> = ({
                       handleSend(lastUserMsg.text);
                     }
                   }}
-                  className="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-medium flex items-center justify-center gap-1 transition shrink-0 cursor-pointer"
+                  className="px-2.5 py-1 border border-loss/40 text-loss hover:bg-loss/10 rounded-md text-xs font-medium flex items-center justify-center gap-1 transition shrink-0 cursor-pointer"
                 >
                   <RefreshCw className="w-3 h-3" />
                   Reintentar
@@ -378,11 +391,11 @@ export const VerbalExpenseModal: React.FC<VerbalExpenseModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40">
+        <div className="flex items-center justify-between px-6 py-4 border-t border-rule">
           <button
             type="button"
             onClick={handleReset}
-            className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white font-medium cursor-pointer"
+            className="text-xs text-ink-muted hover:text-ink font-medium cursor-pointer"
           >
             Reiniciar conversación
           </button>
@@ -391,7 +404,7 @@ export const VerbalExpenseModal: React.FC<VerbalExpenseModalProps> = ({
               id="cancel-verbal-btn"
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition cursor-pointer"
+              className="px-4 py-2 text-sm font-medium border border-rule text-ink-muted hover:text-ink rounded-md transition cursor-pointer"
             >
               Cerrar
             </button>
@@ -400,7 +413,7 @@ export const VerbalExpenseModal: React.FC<VerbalExpenseModalProps> = ({
                 id="confirm-verbal-save-btn"
                 type="button"
                 onClick={handleConfirmSave}
-                className="px-5 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs transition flex items-center gap-2 cursor-pointer"
+                className="px-5 py-2 text-sm font-medium text-paper bg-ink hover:bg-ink/85 rounded-md transition flex items-center gap-2 cursor-pointer"
               >
                 <Check className="w-4 h-4" /> Registrar Gasto
               </button>

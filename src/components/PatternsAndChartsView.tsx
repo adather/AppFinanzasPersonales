@@ -138,79 +138,80 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
     const { cx, cy, payload } = props;
     if (!payload || !payload.hasAnomaly) {
       if (highlightAnomaliesOnly) return null;
-      return <circle cx={cx} cy={cy} r={3} fill="#3B82F6" stroke="#FFFFFF" strokeWidth={1.5} />;
+      return <circle cx={cx} cy={cy} r={3} fill="var(--ink-muted)" stroke="var(--paper)" strokeWidth={1.5} />;
     }
 
     return (
       <g key={`dot-${payload.date}`} className="cursor-pointer" onClick={() => setSelectedTimelinePoint(payload)}>
-        <circle cx={cx} cy={cy} r={9} fill="#EF4444" fillOpacity={0.25} className="animate-ping" />
-        <circle cx={cx} cy={cy} r={6} fill="#EF4444" stroke="#FFFFFF" strokeWidth={2} />
-        <circle cx={cx} cy={cy} r={2} fill="#FFFFFF" />
+        <circle cx={cx} cy={cy} r={9} fill="var(--loss)" fillOpacity={0.25} className="animate-ping" />
+        <circle cx={cx} cy={cy} r={6} fill="var(--loss)" stroke="var(--paper)" strokeWidth={2} />
+        <circle cx={cx} cy={cy} r={2} fill="var(--paper)" />
       </g>
     );
   };
 
   return (
-    <div className="space-y-8 text-slate-800 dark:text-slate-100 transition-colors duration-200">
+    <div className="space-y-8 text-ink transition-colors duration-200">
       {/* Top Behavioral Insights Ribbon */}
-      <div className="p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800/80 shadow-2xs space-y-4 transition-colors duration-200">
+      <div className="p-6 border border-insight/30 bg-insight/5 space-y-4 transition-colors duration-200">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex items-start gap-3.5">
-            <div className="w-11 h-11 rounded-xl bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
-              <Sparkles className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+            <div className="w-11 h-11 border border-insight/40 bg-insight/10 text-insight flex items-center justify-center shrink-0 mt-0.5">
+              <Sparkles className="w-6 h-6 text-insight" />
             </div>
             <div>
               <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-[11px] font-bold text-amber-800 dark:text-amber-400 bg-amber-100 dark:bg-amber-950/40 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                  Patrón Conductual Detectado
+                <span className="text-xs font-medium text-insight">
+                  Patrón conductual detectado
                 </span>
-                <span className="text-xs text-slate-400 dark:text-slate-500 font-mono">Efecto Viernes & Fin de Semana</span>
+                <span className="text-rule">·</span>
+                <span className="text-xs text-ink-muted font-mono">Efecto viernes &amp; fin de semana</span>
               </div>
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-                Pico de Gasto Social y Recompensa Inmediata (+{behavioral.fridaySpikePct}% los Viernes)
+              <h2 className="font-display text-lg text-ink">
+                Pico de gasto social y recompensa inmediata (+{behavioral.fridaySpikePct}% los viernes)
               </h2>
-              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 max-w-3xl leading-relaxed">
+              <p className="text-xs text-ink-muted mt-1 max-w-3xl leading-relaxed">
                 Tus consumos en restaurantes, cafeterías y ocio aumentan sistemáticamente al final de la semana
                 laboral. El sesgo de recompensa inmediata ('trabajé duro toda la semana') concentra el{' '}
-                <strong>{behavioral.weekendPct}%</strong> de tu presupuesto total en fines de semana.
+                <strong className="text-ink">{behavioral.weekendPct}%</strong> de tu presupuesto total en fines de semana.
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2.5 shrink-0">
-            <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 text-center min-w-[120px]">
-              <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 block font-mono">
-                Pico Viernes
+            <div className="p-3 border border-rule text-center min-w-[120px]">
+              <span className="text-xs text-ink-muted block">
+                Pico viernes
               </span>
-              <span className="text-lg font-black text-amber-600 dark:text-amber-400 font-mono">
+              <span className="font-display text-lg text-insight font-mono">
                 +{behavioral.fridaySpikePct}%
               </span>
-              <span className="text-[10px] text-slate-400 dark:text-slate-500 block">vs. días laborales</span>
+              <span className="text-[10px] text-ink-muted block">vs. días laborales</span>
             </div>
-            <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 text-center min-w-[120px]">
-              <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 block font-mono">
+            <div className="p-3 border border-rule text-center min-w-[120px]">
+              <span className="text-xs text-ink-muted block">
                 Anomalías &gt;2σ
               </span>
-              <span className="text-lg font-black text-rose-600 dark:text-rose-400 font-mono">
+              <span className="font-display text-lg text-loss font-mono">
                 {computedAnomalies.length}
               </span>
-              <span className="text-[10px] text-slate-400 dark:text-slate-500 block">en la serie temporal</span>
+              <span className="text-[10px] text-ink-muted block">en la serie temporal</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* SECTION 1: INTERACTIVE TIMELINE / TIME SERIES */}
-      <div className="p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs space-y-5 transition-colors">
+      <div className="p-6 border border-rule space-y-5 transition-colors">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                Línea de Tiempo Interactiva: Evolución de Gastos y Anomalías
+              <Clock className="w-4 h-4 text-ink-muted" />
+              <h3 className="font-display text-lg text-ink">
+                Línea de tiempo interactiva: evolución de gastos y anomalías
               </h3>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            <p className="text-xs text-ink-muted mt-0.5">
               Haz clic en cualquier punto o anomalía para inspeccionar el desglose de compras de esa fecha.
             </p>
           </div>
@@ -218,25 +219,25 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
           {/* Interactive Controls */}
           <div className="flex items-center gap-2 flex-wrap">
             {/* Daily vs Cumulative toggle */}
-            <div className="flex items-center bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200/80 dark:border-slate-800">
+            <div className="flex items-center border border-rule p-1 rounded-md">
               <button
                 type="button"
                 onClick={() => setTimelineMode('daily')}
-                className={`px-3 py-1 text-xs font-semibold rounded-lg transition cursor-pointer ${
+                className={`px-3 py-1 text-xs font-medium rounded-md transition cursor-pointer ${
                   timelineMode === 'daily'
-                    ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-2xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    ? 'bg-ink text-paper'
+                    : 'text-ink-muted hover:text-ink'
                 }`}
               >
-                Gasto Diario
+                Gasto diario
               </button>
               <button
                 type="button"
                 onClick={() => setTimelineMode('cumulative')}
-                className={`px-3 py-1 text-xs font-semibold rounded-lg transition cursor-pointer ${
+                className={`px-3 py-1 text-xs font-medium rounded-md transition cursor-pointer ${
                   timelineMode === 'cumulative'
-                    ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-2xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    ? 'bg-ink text-paper'
+                    : 'text-ink-muted hover:text-ink'
                 }`}
               >
                 Acumulado
@@ -244,16 +245,16 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
             </div>
 
             {/* Time range selector */}
-            <div className="flex items-center bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200/80 dark:border-slate-800">
+            <div className="flex items-center border border-rule p-1 rounded-md">
               {(['all', '14d', '7d'] as const).map((r) => (
                 <button
                   key={r}
                   type="button"
                   onClick={() => setTimeRange(r)}
-                  className={`px-2.5 py-1 text-xs font-medium rounded-lg transition cursor-pointer ${
+                  className={`px-2.5 py-1 text-xs font-medium rounded-md transition cursor-pointer ${
                     timeRange === r
-                      ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-2xs font-bold'
-                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                      ? 'bg-ink text-paper'
+                      : 'text-ink-muted hover:text-ink'
                   }`}
                 >
                   {r === 'all' ? 'Todo' : r === '14d' ? '14 días' : '7 días'}
@@ -265,37 +266,37 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
             <button
               type="button"
               onClick={() => setHighlightAnomaliesOnly(!highlightAnomaliesOnly)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition border cursor-pointer ${
+              className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 transition border cursor-pointer ${
                 highlightAnomaliesOnly
-                  ? 'bg-rose-600 text-white border-rose-600 shadow-2xs'
-                  : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800'
+                  ? 'bg-loss/10 text-loss border-loss/40'
+                  : 'text-ink-muted border-rule hover:text-ink hover:border-ink/40'
               }`}
             >
               <AlertTriangle className="w-3 h-3" />
-              Solo Anomalías &gt;2σ
+              Solo anomalías &gt;2σ
             </button>
           </div>
         </div>
 
         {/* Anomaly Legend Notice */}
-        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-2 pt-1 border-t border-slate-100 dark:border-slate-800 flex-wrap gap-2">
+        <div className="flex items-center justify-between text-xs text-ink-muted px-2 pt-1 border-t border-rule flex-wrap gap-2">
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-rose-500 border-2 border-white ring-2 ring-rose-200" />
-              <strong className="text-slate-700 dark:text-slate-300">Puntos Rojos:</strong> Anomalía estadística detectada (&gt;2σ)
+              <span className="w-2.5 h-2.5 rounded-full bg-loss" />
+              <strong className="text-ink font-medium">Puntos rojos:</strong> anomalía estadística detectada (&gt;2σ)
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-3 h-0.5 bg-blue-500" />
+              <span className="w-3 h-0.5 bg-ink" />
               <span>Gasto del día</span>
             </span>
             {timelineMode === 'daily' && (
-              <span className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500">
-                <span className="w-3 h-0.5 bg-slate-400 border-dashed" />
+              <span className="flex items-center gap-1.5 text-ink-muted">
+                <span className="w-3 h-0.5 bg-ink-muted border-dashed" />
                 <span>Media móvil (3d)</span>
               </span>
             )}
           </div>
-          <span className="text-[11px] text-slate-400 dark:text-slate-500">
+          <span className="text-[11px] text-ink-muted">
             {filteredTimeline.length} días graficados
           </span>
         </div>
@@ -314,23 +315,23 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
             >
               <defs>
                 <linearGradient id="colorDaily" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.25} />
-                  <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.0} />
+                  <stop offset="5%" stopColor="var(--ink)" stopOpacity={0.18} />
+                  <stop offset="95%" stopColor="var(--ink)" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="colorCumulative" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#10B981" stopOpacity={0.0} />
+                  <stop offset="5%" stopColor="var(--ink)" stopOpacity={0.22} />
+                  <stop offset="95%" stopColor="var(--ink)" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--rule)" />
               <XAxis
                 dataKey="displayDate"
                 tickLine={false}
-                tick={{ fontSize: 11, fill: '#64748B' }}
+                tick={{ fontSize: 11, fill: 'var(--ink-muted)' }}
               />
               <YAxis
                 tickLine={false}
-                tick={{ fontSize: 11, fill: '#64748B' }}
+                tick={{ fontSize: 11, fill: 'var(--ink-muted)' }}
                 tickFormatter={(val) => `$${val >= 1000 ? `${(val / 1000).toFixed(1)}k` : val}`}
               />
               <Tooltip
@@ -338,40 +339,40 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
                   if (!active || !payload || !payload.length) return null;
                   const data = payload[0].payload as TimelinePoint;
                   return (
-                    <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xl text-xs space-y-2 max-w-xs">
-                      <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
-                        <span className="font-bold text-slate-800 font-mono">{data.date}</span>
-                        <span className="text-slate-400 font-mono">{data.count} compra(s)</span>
+                    <div className="bg-paper p-3.5 rounded-md border border-rule text-xs space-y-2 max-w-xs text-ink">
+                      <div className="flex items-center justify-between border-b border-rule pb-1.5">
+                        <span className="font-semibold text-ink font-mono">{data.date}</span>
+                        <span className="text-ink-muted font-mono">{data.count} compra(s)</span>
                       </div>
                       <div className="flex items-baseline justify-between gap-4">
-                        <span className="text-slate-500">Total del día:</span>
-                        <span className="font-black text-slate-900 font-mono text-sm">
+                        <span className="text-ink-muted">Total del día:</span>
+                        <span className="font-semibold text-ink font-mono text-sm">
                           ${data.dailyTotal.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
                         </span>
                       </div>
                       {timelineMode === 'cumulative' && (
-                        <div className="flex items-baseline justify-between gap-4 text-emerald-700 font-medium">
+                        <div className="flex items-baseline justify-between gap-4 text-ink font-medium">
                           <span>Acumulado mes:</span>
-                          <span className="font-mono font-bold">
+                          <span className="font-mono font-semibold">
                             ${data.cumulativeTotal.toLocaleString('es-MX')}
                           </span>
                         </div>
                       )}
                       {data.hasAnomaly && (
-                        <div className="p-2 bg-rose-50 rounded-lg border border-rose-100 space-y-1 mt-1">
-                          <div className="flex items-center gap-1 font-bold text-rose-700 text-[11px]">
+                        <div className="p-2 bg-loss/10 rounded border border-loss/30 space-y-1 mt-1">
+                          <div className="flex items-center gap-1 font-medium text-loss text-[11px]">
                             <AlertTriangle className="w-3 h-3" />
                             Anomalía ({data.anomalyZScore ? `+${data.anomalyZScore}σ` : '>2σ'})
                           </div>
-                          <div className="text-slate-700 font-medium truncate">
+                          <div className="text-ink font-medium truncate">
                             {data.anomalyConcept}
                           </div>
-                          <div className="font-mono font-bold text-rose-600">
+                          <div className="font-mono font-semibold text-loss">
                             ${data.anomalyAmount?.toLocaleString('es-MX')}
                           </div>
                         </div>
                       )}
-                      <p className="text-[10px] text-slate-400 italic text-center pt-1">
+                      <p className="text-[10px] text-ink-muted italic text-center pt-1">
                         Haz clic para ver las compras de esta fecha
                       </p>
                     </div>
@@ -383,7 +384,7 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
                   <Area
                     type="monotone"
                     dataKey="dailyTotal"
-                    stroke="#3B82F6"
+                    stroke="var(--ink)"
                     strokeWidth={2}
                     fillOpacity={1}
                     fill="url(#colorDaily)"
@@ -391,7 +392,7 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
                   <Line
                     type="monotone"
                     dataKey="rollingAvg"
-                    stroke="#94A3B8"
+                    stroke="var(--ink-muted)"
                     strokeWidth={1.5}
                     strokeDasharray="4 4"
                     dot={false}
@@ -401,14 +402,14 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
                     dataKey="dailyTotal"
                     stroke="transparent"
                     dot={renderAnomalyDot}
-                    activeDot={{ r: 6, fill: '#1E293B' }}
+                    activeDot={{ r: 6, fill: 'var(--ink)' }}
                   />
                 </>
               ) : (
                 <Area
                   type="monotone"
                   dataKey="cumulativeTotal"
-                  stroke="#10B981"
+                  stroke="var(--ink)"
                   strokeWidth={2.5}
                   fillOpacity={1}
                   fill="url(#colorCumulative)"
@@ -421,15 +422,15 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
 
         {/* Selected Date Detail Drawer / Card */}
         {selectedTimelinePoint && (
-          <div className="p-4 bg-slate-50/80 dark:bg-slate-950/60 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3 animate-in fade-in slide-in-from-top-2">
+          <div className="p-4 bg-surface border border-rule space-y-3 animate-in fade-in slide-in-from-top-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
-                <h4 className="font-bold text-slate-900 dark:text-white text-sm">
+                <span className="w-2.5 h-2.5 rounded-full bg-ink" />
+                <h4 className="font-medium text-ink text-sm">
                   Detalle del {selectedTimelinePoint.date} ({selectedTimelinePoint.transactions.length} transacciones)
                 </h4>
                 {selectedTimelinePoint.hasAnomaly && (
-                  <span className="text-[10px] font-bold text-rose-700 dark:text-rose-300 bg-rose-100 dark:bg-rose-950/50 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <span className="text-xs font-medium text-loss flex items-center gap-1">
                     <AlertTriangle className="w-3 h-3" /> Anomalía detectada
                   </span>
                 )}
@@ -437,7 +438,7 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
               <button
                 type="button"
                 onClick={() => setSelectedTimelinePoint(null)}
-                className="text-xs text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 px-2 py-1 rounded hover:bg-slate-200 dark:hover:bg-slate-800 cursor-pointer"
+                className="text-xs text-ink-muted hover:text-ink underline cursor-pointer"
               >
                 Cerrar detalle
               </button>
@@ -447,17 +448,17 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
               {selectedTimelinePoint.transactions.map((tx) => (
                 <div
                   key={tx.id}
-                  className={`p-3 bg-white dark:bg-slate-900 rounded-xl border text-xs space-y-1 shadow-2xs ${
-                    tx.isAnomaly ? 'border-rose-300 dark:border-rose-900/60 ring-1 ring-rose-200 dark:ring-rose-950/40 bg-rose-50/30 dark:bg-rose-950/10' : 'border-slate-200 dark:border-slate-800/80'
+                  className={`p-3 border text-xs space-y-1 ${
+                    tx.isAnomaly ? 'border-loss/50 bg-loss/5' : 'border-rule'
                   }`}
                 >
                   <div className="flex items-start justify-between">
-                    <span className="font-bold text-slate-800 dark:text-slate-200 truncate pr-2">{tx.concept}</span>
-                    <span className="font-mono font-bold text-slate-900 dark:text-white shrink-0">
+                    <span className="font-medium text-ink truncate pr-2">{tx.concept}</span>
+                    <span className="font-mono font-semibold text-ink shrink-0">
                       ${tx.amount.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between text-slate-400 dark:text-slate-500 text-[11px]">
+                  <div className="flex items-center justify-between text-ink-muted text-[11px]">
                     <span>{tx.merchant}</span>
                     <span
                       className="px-1.5 py-0.5 rounded text-[10px] font-medium"
@@ -470,7 +471,7 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
                     </span>
                   </div>
                   {tx.isAnomaly && (
-                    <div className="text-[10px] font-bold text-rose-600 pt-0.5 flex items-center gap-1">
+                    <div className="text-[10px] font-medium text-loss pt-0.5 flex items-center gap-1">
                       <AlertTriangle className="w-3 h-3" /> Desvío &gt; 2σ (Z-Score alto)
                     </div>
                   )}
@@ -484,18 +485,18 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
       {/* SECTION 2: INTERACTIVE CATEGORY DONUT & BUDGET COMPARISON */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Interactive Pie / Donut Chart */}
-        <div className="lg:col-span-5 p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4 flex flex-col justify-between transition-colors">
+        <div className="lg:col-span-5 p-6 border border-rule space-y-4 flex flex-col justify-between transition-colors">
           <div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <PieChartIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wide">
-                  Composición por Categoría
+                <PieChartIcon className="w-4 h-4 text-ink-muted" />
+                <h3 className="font-display text-lg text-ink">
+                  Composición por categoría
                 </h3>
               </div>
-              <span className="text-xs text-slate-400 dark:text-slate-500">Haz clic para filtrar</span>
+              <span className="text-xs text-ink-muted">Haz clic para filtrar</span>
             </div>
-            <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+            <p className="text-xs text-ink-muted mt-0.5">
               Distribución porcentual del gasto total (${totalSpent.toLocaleString('es-MX')})
             </p>
           </div>
@@ -522,7 +523,7 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
                     <Cell
                       key={`pie-cell-${index}`}
                       fill={entry.color}
-                      stroke={selectedCategoryName === entry.name ? '#0F172A' : '#1e293b'}
+                      stroke={selectedCategoryName === entry.name ? 'var(--ink)' : 'var(--paper)'}
                       strokeWidth={selectedCategoryName === entry.name ? 3 : 1}
                     />
                   ))}
@@ -533,10 +534,11 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
                     'Gasto',
                   ]}
                   contentStyle={{
-                    borderRadius: '12px',
-                    backgroundColor: '#1e293b',
-                    color: '#ffffff',
-                    border: '1px solid #334155',
+                    borderRadius: '4px',
+                    backgroundColor: 'var(--paper)',
+                    color: 'var(--ink)',
+                    border: '1px solid var(--rule)',
+                    boxShadow: 'none',
                     fontSize: '12px',
                   }}
                 />
@@ -545,15 +547,15 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
 
             {/* Centered Donut Summary Label */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center px-4">
-              <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">
-                {selectedCategoryData ? 'Categoría' : 'Gasto Total'}
+              <span className="text-xs text-ink-muted">
+                {selectedCategoryData ? 'Categoría' : 'Gasto total'}
               </span>
-              <span className="text-lg font-black text-slate-900 dark:text-white font-mono">
+              <span className="font-display text-lg text-ink font-mono">
                 ${selectedCategoryData
                   ? selectedCategoryData.total.toLocaleString('es-MX')
                   : totalSpent.toLocaleString('es-MX')}
               </span>
-              <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium truncate max-w-[130px]">
+              <span className="text-[11px] text-ink-muted font-medium truncate max-w-[130px]">
                 {selectedCategoryData ? selectedCategoryData.category : 'Todas'}
               </span>
             </div>
@@ -561,9 +563,9 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
 
           {/* Selected Category Dynamic Info Card */}
           {selectedCategoryData ? (
-            <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 space-y-2 text-xs">
+            <div className="p-3.5 border border-rule bg-surface space-y-2 text-xs">
               <div className="flex items-center justify-between">
-                <span className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                <span className="font-medium text-ink flex items-center gap-1.5">
                   <span
                     className="w-2.5 h-2.5 rounded-full"
                     style={{ backgroundColor: selectedCategoryData.color }}
@@ -573,63 +575,63 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setSelectedCategoryName(null)}
-                  className="text-[11px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 underline cursor-pointer"
+                  className="text-[11px] text-ink-muted hover:text-ink underline cursor-pointer"
                 >
                   Ver todas
                 </button>
               </div>
 
               <div className="grid grid-cols-3 gap-2 text-center pt-1">
-                <div className="p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-800">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 block font-mono uppercase">Presupuesto</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200 font-mono">
+                <div className="p-2 border border-rule">
+                  <span className="text-[10px] text-ink-muted block font-mono">Presupuesto</span>
+                  <span className="font-semibold text-ink font-mono">
                     ${selectedCategoryData.budget.toLocaleString('es-MX')}
                   </span>
                 </div>
-                <div className="p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-800">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 block font-mono uppercase">% Consumido</span>
+                <div className="p-2 border border-rule">
+                  <span className="text-[10px] text-ink-muted block font-mono">% consumido</span>
                   <span
-                    className={`font-bold font-mono ${
-                      selectedCategoryData.budgetPercent > 100 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600'
+                    className={`font-semibold font-mono ${
+                      selectedCategoryData.budgetPercent > 100 ? 'text-loss' : 'text-gain'
                     }`}
                   >
                     {selectedCategoryData.budgetPercent}%
                   </span>
                 </div>
-                <div className="p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-800">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 block font-mono uppercase">Media (μ)</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200 font-mono">
+                <div className="p-2 border border-rule">
+                  <span className="text-[10px] text-ink-muted block font-mono">Media (μ)</span>
+                  <span className="font-semibold text-ink font-mono">
                     ${selectedCategoryData.mean.toLocaleString('es-MX')}
                   </span>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="text-[11px] text-slate-400 dark:text-slate-500 text-center italic py-2">
+            <div className="text-[11px] text-ink-muted text-center italic py-2">
               Haz clic en cualquier segmento del gráfico para ver detalles y parámetros estadísticos.
             </div>
           )}
         </div>
 
         {/* Real vs Budget Grouped Bar Chart */}
-        <div className="lg:col-span-7 p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4 transition-colors">
+        <div className="lg:col-span-7 p-6 border border-rule space-y-4 transition-colors">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <div className="flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-slate-900 dark:text-white" />
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wide">
-                  Gasto Real vs. Presupuesto por Partida
+                <BarChart3 className="w-4 h-4 text-ink-muted" />
+                <h3 className="font-display text-lg text-ink">
+                  Gasto real vs. presupuesto por partida
                 </h3>
               </div>
-              <p className="text-xs text-slate-400 dark:text-slate-500">Identificación visual de sobregiros</p>
+              <p className="text-xs text-ink-muted">Identificación visual de sobregiros</p>
             </div>
 
             <div className="flex items-center gap-3 text-xs">
-              <span className="flex items-center gap-1.5 text-slate-800 dark:text-slate-200 font-semibold">
-                <span className="w-3 h-3 rounded-xs bg-slate-900 dark:bg-slate-100" /> Gasto Real
+              <span className="flex items-center gap-1.5 text-ink font-medium">
+                <span className="w-3 h-3 bg-ink" /> Gasto real
               </span>
-              <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
-                <span className="w-3 h-3 rounded-xs bg-slate-300 dark:bg-slate-700" /> Presupuesto
+              <span className="flex items-center gap-1.5 text-ink-muted">
+                <span className="w-3 h-3 bg-rule" /> Presupuesto
               </span>
             </div>
           </div>
@@ -640,17 +642,17 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
                 data={categoryBarData}
                 margin={{ top: 10, right: 10, left: -20, bottom: 45 }}
               >
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.15} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--rule)" />
                 <XAxis
                   dataKey="name"
                   tickLine={false}
                   angle={-35}
                   textAnchor="end"
-                  tick={{ fontSize: 10, fill: '#94A3B8' }}
+                  tick={{ fontSize: 10, fill: 'var(--ink-muted)' }}
                 />
                 <YAxis
                   tickLine={false}
-                  tick={{ fontSize: 10, fill: '#94A3B8' }}
+                  tick={{ fontSize: 10, fill: 'var(--ink-muted)' }}
                   tickFormatter={(v) => `$${v >= 1000 ? `${v / 1000}k` : v}`}
                 />
                 <Tooltip
@@ -658,21 +660,21 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
                     if (!active || !payload || !payload.length) return null;
                     const d = payload[0].payload;
                     return (
-                      <div className="bg-white dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl text-xs space-y-1.5 text-slate-800 dark:text-slate-200">
-                        <span className="font-bold text-slate-900 dark:text-white block">{d.fullName}</span>
-                        <div className="flex justify-between gap-4 text-slate-600 dark:text-slate-400">
-                          <span>Gasto Real:</span>
-                          <span className="font-bold font-mono text-slate-900 dark:text-white">
+                      <div className="bg-paper p-3 rounded-md border border-rule text-xs space-y-1.5 text-ink">
+                        <span className="font-semibold text-ink block">{d.fullName}</span>
+                        <div className="flex justify-between gap-4 text-ink-muted">
+                          <span>Gasto real:</span>
+                          <span className="font-semibold font-mono text-ink">
                             ${Number(d.Real).toLocaleString('es-MX')}
                           </span>
                         </div>
-                        <div className="flex justify-between gap-4 text-slate-500 dark:text-slate-400">
+                        <div className="flex justify-between gap-4 text-ink-muted">
                           <span>Presupuesto:</span>
                           <span className="font-mono">${Number(d.Presupuesto).toLocaleString('es-MX')}</span>
                         </div>
                         <div
-                          className={`flex justify-between gap-4 font-bold pt-1 border-t border-slate-100 dark:border-slate-800/80 ${
-                            d.overBudget ? 'text-rose-600' : 'text-emerald-600'
+                          className={`flex justify-between gap-4 font-semibold pt-1 border-t border-rule ${
+                            d.overBudget ? 'text-loss' : 'text-gain'
                           }`}
                         >
                           <span>{d.overBudget ? 'Sobregiro:' : 'Margen a favor:'}</span>
@@ -684,22 +686,22 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
                     );
                   }}
                 />
-                <Bar dataKey="Real" fill="#0F172A" radius={[4, 4, 0, 0]}>
+                <Bar dataKey="Real" fill="var(--ink)" radius={[2, 2, 0, 0]}>
                   {categoryBarData.map((entry, index) => (
                     <Cell
                       key={`bar-${index}`}
-                      fill={entry.overBudget ? '#EF4444' : '#10B981'}
+                      fill={entry.overBudget ? 'var(--loss)' : 'var(--gain)'}
                     />
                   ))}
                 </Bar>
-                <Bar dataKey="Presupuesto" fill="#64748B" radius={[4, 4, 0, 0]} opacity={0.65} />
+                <Bar dataKey="Presupuesto" fill="var(--ink-muted)" radius={[2, 2, 0, 0]} opacity={0.35} />
               </BarChart>
             </ResponsiveContainer>
           </div>
 
-          <div className="p-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl text-xs text-slate-500 dark:text-slate-400 flex items-center justify-between border border-transparent dark:border-slate-800">
+          <div className="p-2.5 border border-rule text-xs text-ink-muted flex items-center justify-between">
             <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
+              <span className="w-2.5 h-2.5 rounded-full bg-loss" />
               Barras rojas indican categorías que han superado el 100% del presupuesto asignado.
             </span>
           </div>
@@ -709,16 +711,16 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
       {/* SECTION 3: BEHAVIORAL DAY-OF-WEEK & TRANSACTION AMOUNT DISTRIBUTION */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Day of Week with Friday Spike Highlight */}
-        <div className="p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4 transition-colors">
+        <div className="p-6 border border-rule space-y-4 transition-colors">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wide">
-                Gasto por Día de la Semana
+              <h3 className="font-display text-lg text-ink">
+                Gasto por día de la semana
               </h3>
-              <p className="text-xs text-slate-400 dark:text-slate-500">Total acumulado en el mes</p>
+              <p className="text-xs text-ink-muted">Total acumulado en el mes</p>
             </div>
-            <span className="text-xs font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-lg border border-amber-200 dark:border-amber-800">
-              Pico en Viernes (+{behavioral.fridaySpikePct}%)
+            <span className="text-xs font-medium text-insight border border-insight/40 px-2.5 py-1">
+              Pico en viernes (+{behavioral.fridaySpikePct}%)
             </span>
           </div>
 
@@ -728,31 +730,31 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
                 data={behavioral.dayOfWeekSummary}
                 margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
               >
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.15} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--rule)" />
                 <XAxis
                   dataKey="day"
                   tickLine={false}
-                  tick={{ fontSize: 11, fill: '#94A3B8' }}
+                  tick={{ fontSize: 11, fill: 'var(--ink-muted)' }}
                 />
                 <YAxis
                   tickLine={false}
-                  tick={{ fontSize: 11, fill: '#94A3B8' }}
+                  tick={{ fontSize: 11, fill: 'var(--ink-muted)' }}
                   tickFormatter={(v) => `$${v >= 1000 ? `${v / 1000}k` : v}`}
                 />
                 <Tooltip
                   formatter={(val: any) => [`$${Number(val).toLocaleString('es-MX')}`, 'Gasto Total']}
-                  contentStyle={{ borderRadius: '12px', backgroundColor: '#1e293b', border: '1px solid #334155', color: '#fff', fontSize: '12px' }}
+                  contentStyle={{ borderRadius: '4px', backgroundColor: 'var(--paper)', border: '1px solid var(--rule)', color: 'var(--ink)', boxShadow: 'none', fontSize: '12px' }}
                 />
-                <Bar dataKey="total" radius={[6, 6, 0, 0]}>
+                <Bar dataKey="total" radius={[3, 3, 0, 0]}>
                   {behavioral.dayOfWeekSummary.map((entry, index) => (
                     <Cell
                       key={`day-cell-${index}`}
                       fill={
                         entry.day === 'Viernes'
-                          ? '#F59E0B'
+                          ? 'var(--insight)'
                           : entry.day === 'Sábado' || entry.day === 'Domingo'
-                          ? '#3B82F6'
-                          : '#64748B'
+                          ? 'var(--ink-muted)'
+                          : 'var(--rule)'
                       }
                     />
                   ))}
@@ -762,31 +764,31 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
           </div>
 
           <div className="grid grid-cols-2 gap-3 text-xs pt-1">
-            <div className="p-3 bg-amber-50/70 dark:bg-amber-950/25 rounded-xl border border-amber-100 dark:border-amber-900/40">
-              <span className="font-bold text-amber-900 dark:text-amber-400 block">Viernes Social:</span>
-              <p className="text-amber-800 dark:text-amber-300 text-[11px] mt-0.5 leading-relaxed">
+            <div className="p-3 border border-insight/30 bg-insight/5">
+              <span className="font-medium text-insight block">Viernes social:</span>
+              <p className="text-ink-muted text-[11px] mt-0.5 leading-relaxed">
                 Sesgo de gratificación inmediata ('trabajé duro'). Eleva el gasto promedio por transacción un 42%.
               </p>
             </div>
-            <div className="p-3 bg-blue-50/70 dark:bg-blue-950/25 rounded-xl border border-blue-100 dark:border-blue-900/40">
-              <span className="font-bold text-blue-900 dark:text-blue-400 block">Fines de Semana:</span>
-              <p className="text-blue-800 dark:text-blue-300 text-[11px] mt-0.5 leading-relaxed">
-                Representa el <strong>{behavioral.weekendPct}%</strong> del flujo monetario mensual total.
+            <div className="p-3 border border-rule">
+              <span className="font-medium text-ink block">Fines de semana:</span>
+              <p className="text-ink-muted text-[11px] mt-0.5 leading-relaxed">
+                Representa el <strong className="text-ink">{behavioral.weekendPct}%</strong> del flujo monetario mensual total.
               </p>
             </div>
           </div>
         </div>
 
         {/* Transaction Size Distribution (Histogram) */}
-        <div className="p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4 transition-colors">
+        <div className="p-6 border border-rule space-y-4 transition-colors">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wide">
-                Distribución por Magnitud de Gasto
+              <h3 className="font-display text-lg text-ink">
+                Distribución por magnitud de gasto
               </h3>
-              <p className="text-xs text-slate-400 dark:text-slate-500">Microgastos vs. compras extraordinarias</p>
+              <p className="text-xs text-ink-muted">Microgastos vs. compras extraordinarias</p>
             </div>
-            <span className="text-xs font-semibold text-purple-700 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/40 px-2.5 py-1 rounded-lg border border-purple-200 dark:border-purple-800">
+            <span className="text-xs font-medium text-insight border border-insight/40 px-2.5 py-1">
               The Latte Factor
             </span>
           </div>
@@ -794,23 +796,23 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
           <div className="h-60 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={spendingTiers} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.15} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--rule)" />
                 <XAxis
                   dataKey="label"
                   tickLine={false}
                   angle={-15}
                   textAnchor="end"
-                  tick={{ fontSize: 9.5, fill: '#94A3B8' }}
+                  tick={{ fontSize: 9.5, fill: 'var(--ink-muted)' }}
                 />
-                <YAxis tickLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }} />
+                <YAxis tickLine={false} tick={{ fontSize: 11, fill: 'var(--ink-muted)' }} />
                 <Tooltip
                   formatter={(val: any, name: any, item: any) => [
                     `${val} compras ($${item.payload.total.toLocaleString('es-MX')} en total)`,
                     'Frecuencia',
                   ]}
-                  contentStyle={{ borderRadius: '12px', backgroundColor: '#1e293b', border: '1px solid #334155', color: '#fff', fontSize: '12px' }}
+                  contentStyle={{ borderRadius: '4px', backgroundColor: 'var(--paper)', border: '1px solid var(--rule)', color: 'var(--ink)', boxShadow: 'none', fontSize: '12px' }}
                 />
-                <Bar dataKey="count" radius={[6, 6, 0, 0]}>
+                <Bar dataKey="count" radius={[3, 3, 0, 0]}>
                   {spendingTiers.map((entry, index) => (
                     <Cell key={`tier-${index}`} fill={entry.color} />
                   ))}
@@ -819,14 +821,14 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
             </ResponsiveContainer>
           </div>
 
-          <div className="p-3 bg-purple-50/70 dark:bg-purple-950/25 rounded-xl border border-purple-100 dark:border-purple-900/40 text-xs flex items-center justify-between">
+          <div className="p-3 border border-insight/30 bg-insight/5 text-xs flex items-center justify-between">
             <div>
-              <span className="font-bold text-purple-900 dark:text-purple-400 block">Microgastos (&lt;$150):</span>
-              <span className="text-purple-800 dark:text-purple-300 text-[11px]">
+              <span className="font-medium text-insight block">Microgastos (&lt;$150):</span>
+              <span className="text-ink-muted text-[11px]">
                 {behavioral.microExpensesCount} transacciones suman ${behavioral.microExpensesTotal.toLocaleString('es-MX')}.
               </span>
             </div>
-            <span className="text-[11px] font-bold text-purple-700 dark:text-purple-300 bg-white dark:bg-slate-900 px-2 py-1 rounded-lg border border-purple-200 dark:border-purple-800 font-mono">
+            <span className="text-[11px] font-medium text-insight border border-insight/30 px-2 py-1 font-mono">
               Fácil de optimizar
             </span>
           </div>

@@ -69,22 +69,22 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   };
 
   return (
-    <div id="add-modal-backdrop" className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto">
-      <div id="add-modal-card" className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden my-8">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/70">
+    <div id="add-modal-backdrop" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 overflow-y-auto">
+      <div id="add-modal-card" className="bg-paper border border-rule rounded-lg w-full max-w-lg overflow-hidden my-8">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-rule">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
-              <PlusCircle className="w-5 h-5" />
+            <div className="w-9 h-9 rounded-md border border-rule text-ink flex items-center justify-center shrink-0">
+              <PlusCircle className="w-4.5 h-4.5" />
             </div>
             <div>
-              <h3 className="font-bold text-slate-800 text-lg">Nuevo Gasto Manual</h3>
-              <p className="text-xs text-slate-500">Ingresa los datos para alimentar el modelo estadístico</p>
+              <h3 className="font-display text-lg text-ink">Nuevo gasto manual</h3>
+              <p className="text-xs text-ink-muted">Ingresa los datos para alimentar el modelo estadístico</p>
             </div>
           </div>
           <button
             id="close-add-modal-btn"
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition"
+            className="p-2 text-ink-muted hover:text-ink hover:bg-surface rounded-md transition"
           >
             <X className="w-5 h-5" />
           </button>
@@ -92,20 +92,20 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1">Concepto o Descripción *</label>
+            <label className="block text-xs text-ink-muted mb-1">Concepto o descripción *</label>
             <input
               type="text"
               required
               value={concept}
               onChange={(e) => setConcept(e.target.value)}
               placeholder="Ej: Despensa semanal, Gasolina, Cena familiar..."
-              className="w-full text-sm px-3.5 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none"
+              className="w-full text-sm px-3.5 py-2 border border-rule bg-paper text-ink rounded-md focus:border-ink/50 focus:outline-none"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">Monto ($) *</label>
+              <label className="block text-xs text-ink-muted mb-1">Monto ($) *</label>
               <input
                 type="number"
                 step="0.01"
@@ -113,28 +113,28 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.00"
-                className="w-full text-sm font-semibold px-3.5 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none"
+                className="w-full text-sm font-mono px-3.5 py-2 border border-rule bg-paper text-ink rounded-md focus:border-ink/50 focus:outline-none"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">Fecha *</label>
+              <label className="block text-xs text-ink-muted mb-1">Fecha *</label>
               <input
                 type="date"
                 required
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full text-sm px-3.5 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none"
+                className="w-full text-sm font-mono px-3.5 py-2 border border-rule bg-paper text-ink rounded-md focus:border-ink/50 focus:outline-none"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">Categoría</label>
+              <label className="block text-xs text-ink-muted mb-1">Categoría</label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value as CategoryName)}
-                className="w-full text-sm px-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none bg-white"
+                className="w-full text-sm px-3 py-2 border border-rule rounded-md bg-paper text-ink focus:border-ink/50 focus:outline-none"
               >
                 {CATEGORIES.map((c) => (
                   <option key={c} value={c}>{c}</option>
@@ -142,43 +142,43 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">Comercio o Lugar</label>
+              <label className="block text-xs text-ink-muted mb-1">Comercio o lugar</label>
               <input
                 type="text"
                 value={merchant}
                 onChange={(e) => setMerchant(e.target.value)}
                 placeholder="Ej: Walmart, Starbucks, Pemex..."
-                className="w-full text-sm px-3.5 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none"
+                className="w-full text-sm px-3.5 py-2 border border-rule bg-paper text-ink rounded-md focus:border-ink/50 focus:outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1">Notas adicionales (opcional)</label>
+            <label className="block text-xs text-ink-muted mb-1">Notas adicionales (opcional)</label>
             <input
               type="text"
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="Ej: Salida especial, pago con tarjeta de crédito..."
-              className="w-full text-sm px-3.5 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none"
+              className="w-full text-sm px-3.5 py-2 border border-rule bg-paper text-ink rounded-md focus:border-ink/50 focus:outline-none"
             />
           </div>
 
           {error && (
-            <p className="text-xs text-rose-600 font-medium">{error}</p>
+            <p className="text-xs text-loss">{error}</p>
           )}
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-rule">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 transition"
+              className="px-4 py-2 text-sm font-medium border border-rule text-ink-muted hover:text-ink rounded-md transition"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-5 py-2 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-xl shadow-xs transition flex items-center gap-2"
+              className="px-5 py-2 text-sm font-medium text-paper bg-ink hover:bg-ink/85 rounded-md transition flex items-center gap-2"
             >
               <Check className="w-4 h-4" /> Guardar
             </button>
