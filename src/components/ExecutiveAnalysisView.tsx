@@ -74,7 +74,7 @@ export const ExecutiveAnalysisView: React.FC<ExecutiveAnalysisViewProps> = ({
               </>
             )}
           </div>
-          <h2 className="font-bold text-xl text-ink tracking-tight">
+          <h2 className="font-bold text-2xl text-ink tracking-tight">
             Informe estadístico & conductual de gastos
           </h2>
           <p className="text-xs text-ink-muted mt-0.5">
@@ -116,7 +116,7 @@ export const ExecutiveAnalysisView: React.FC<ExecutiveAnalysisViewProps> = ({
       </div>
 
       {/* 1. Resumen Ejecutivo */}
-      <section id="resumen-ejecutivo-section" className="bg-surface rounded-2xl shadow-sm p-5 sm:p-6 space-y-3">
+      <section id="resumen-ejecutivo-section" className="bg-surface rounded-2xl p-5 sm:p-6 space-y-3">
         <div className="flex items-baseline justify-between">
           <h3 className="font-bold text-base text-ink">Resumen ejecutivo</h3>
           <span className="text-xs text-ink-muted">3-4 puntos clave de diagnóstico</span>
@@ -124,14 +124,28 @@ export const ExecutiveAnalysisView: React.FC<ExecutiveAnalysisViewProps> = ({
 
         {analysis?.resumenEjecutivo && analysis.resumenEjecutivo.length > 0 ? (
           <ol className="divide-y divide-rule">
-            {analysis.resumenEjecutivo.map((point, index) => (
-              <li key={index} className="py-3.5 flex items-start gap-4 first:pt-1">
-                <span className="w-6 h-6 rounded-full bg-accent-soft text-accent text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
-                  {index + 1}
-                </span>
-                <p className="text-sm text-ink leading-relaxed">{point}</p>
-              </li>
-            ))}
+            {analysis.resumenEjecutivo.map((point, index) => {
+              const isLead = index === 0;
+              return (
+                <li
+                  key={index}
+                  className={`flex items-start gap-4 first:pt-1 ${isLead ? 'py-4' : 'py-3.5'}`}
+                >
+                  <span
+                    className={`rounded-full font-bold flex items-center justify-center shrink-0 ${
+                      isLead
+                        ? 'w-7 h-7 bg-accent text-white text-sm mt-0.5'
+                        : 'w-6 h-6 bg-accent-soft text-accent text-xs mt-1'
+                    }`}
+                  >
+                    {index + 1}
+                  </span>
+                  <p className={isLead ? 'text-base font-medium text-ink leading-relaxed' : 'text-sm text-ink-muted leading-relaxed'}>
+                    {point}
+                  </p>
+                </li>
+              );
+            })}
           </ol>
         ) : (
           <div className="py-6 text-center text-ink-muted text-sm">
@@ -141,7 +155,7 @@ export const ExecutiveAnalysisView: React.FC<ExecutiveAnalysisViewProps> = ({
       </section>
 
       {/* 2. Tabla con Categorías: Total gastado, % del presupuesto, tendencia (↑↓) */}
-      <section id="tabla-categorias-section" className="bg-surface rounded-2xl shadow-sm p-5 sm:p-6 space-y-3">
+      <section id="tabla-categorias-section" className="bg-surface rounded-2xl p-5 sm:p-6 space-y-3">
         <div className="flex items-baseline justify-between">
           <h3 className="font-bold text-base text-ink">Categorías & tendencias</h3>
           <span className="text-xs text-ink-muted">total gastado vs. presupuesto asignado</span>
@@ -242,7 +256,7 @@ export const ExecutiveAnalysisView: React.FC<ExecutiveAnalysisViewProps> = ({
         {analysis?.topAnomalias && analysis.topAnomalias.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {analysis.topAnomalias.slice(0, 3).map((anomaly, idx) => (
-              <div key={idx} className="bg-surface rounded-2xl shadow-sm p-5 space-y-3">
+              <div key={idx} className="bg-surface rounded-2xl p-5 space-y-3">
                 <div className="flex items-start justify-between">
                   <span className="text-xs font-medium text-loss bg-loss/10 px-2 py-1 rounded-full flex items-center gap-1">
                     <AlertTriangle className="w-3.5 h-3.5" />
@@ -267,7 +281,7 @@ export const ExecutiveAnalysisView: React.FC<ExecutiveAnalysisViewProps> = ({
             ))}
           </div>
         ) : (
-          <div className="bg-surface rounded-2xl shadow-sm py-6 text-center text-sm text-ink-muted">
+          <div className="bg-surface rounded-2xl py-6 text-center text-sm text-ink-muted">
             No se han detectado anomalías superiores a 2 desviaciones estándar en este periodo.
           </div>
         )}
@@ -283,7 +297,7 @@ export const ExecutiveAnalysisView: React.FC<ExecutiveAnalysisViewProps> = ({
         {analysis?.recomendacionesAhorro && analysis.recomendacionesAhorro.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {analysis.recomendacionesAhorro.map((rec, idx) => (
-              <div key={idx} className="bg-surface rounded-2xl shadow-sm p-5 space-y-3">
+              <div key={idx} className="bg-surface rounded-2xl p-5 space-y-3">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-lg bg-insight/15 text-insight flex items-center justify-center shrink-0">
@@ -306,7 +320,7 @@ export const ExecutiveAnalysisView: React.FC<ExecutiveAnalysisViewProps> = ({
             ))}
           </div>
         ) : (
-          <div className="bg-surface rounded-2xl shadow-sm py-6 text-center text-sm text-ink-muted">
+          <div className="bg-surface rounded-2xl py-6 text-center text-sm text-ink-muted">
             Generando recomendaciones de economía conductual...
           </div>
         )}
@@ -315,7 +329,7 @@ export const ExecutiveAnalysisView: React.FC<ExecutiveAnalysisViewProps> = ({
       {/* 5. Comparativa con Mes Anterior & Patrones Proactivos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Comparativa con Mes Anterior */}
-        <section id="comparativa-mes-anterior-section" className="bg-surface rounded-2xl shadow-sm p-6 space-y-4">
+        <section id="comparativa-mes-anterior-section" className="bg-surface rounded-2xl p-6 space-y-4">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <h3 className="font-bold text-base text-ink">Comparativa con mes anterior</h3>
             {analysis?.comparativaMesAnterior && (
@@ -366,7 +380,7 @@ export const ExecutiveAnalysisView: React.FC<ExecutiveAnalysisViewProps> = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
           id="patrones-proactivos-section"
-          className="rounded-2xl shadow-sm p-6 space-y-4 bg-accent text-white"
+          className="rounded-2xl p-6 space-y-4 bg-accent text-white"
         >
           <div className="flex items-center justify-between flex-wrap gap-2">
             <h3 className="font-bold text-base flex items-center gap-2">

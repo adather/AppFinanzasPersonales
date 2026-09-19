@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   AreaChart,
   Area,
@@ -50,6 +50,50 @@ interface PatternsAndChartsViewProps {
   onSelectCategory?: (category: CategoryName) => void;
 }
 
+// A single radial progress ring — real % metrics at a glance (budget used,
+// weekend concentration, anomaly rate), not decorative icon badges.
+const ProgressRing: React.FC<{ percent: number; color: string; label: string; sublabel: string }> = ({
+  percent,
+  color,
+  label,
+  sublabel,
+}) => {
+  const size = 96;
+  const strokeWidth = 9;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const clamped = Math.min(100, Math.max(0, percent));
+  const offset = circumference * (1 - clamped / 100);
+
+  return (
+    <div className="flex flex-col items-center gap-2.5">
+      <div className="relative" style={{ width: size, height: size }}>
+        <svg width={size} height={size} className="-rotate-90">
+          <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="var(--rule)" strokeWidth={strokeWidth} />
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="none"
+            stroke={color}
+            strokeWidth={strokeWidth}
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
+            strokeLinecap="round"
+          />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-lg font-bold text-ink">{Math.round(clamped)}%</span>
+        </div>
+      </div>
+      <div className="text-center">
+        <div className="text-xs font-medium text-ink">{label}</div>
+        <div className="text-[11px] text-ink-muted">{sublabel}</div>
+      </div>
+    </div>
+  );
+};
+
 export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
   transactions,
   categoryStats,
@@ -68,6 +112,17 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
   // Bar chart mode
   const [barMetric, setBarMetric] = useState<'total' | 'vsBudget'>('vsBudget');
 
+  // Recharts' ResponsiveContainer can measure a 0 width on the very first
+  // paint when this view loads as the initial/default tab (before the
+  // sidebar/fonts finish settling), leaving every chart blank until some
+  // later resize. Forcing one remount shortly after mount fixes it — this
+  // is what "navigate away and back" was doing manually during testing.
+  const [chartsMountKey, setChartsMountKey] = useState(0);
+  useEffect(() => {
+    const timer = setTimeout(() => setChartsMountKey((k) => k + 1), 60);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Compute anomalies if not provided
   const computedAnomalies = useMemo(() => {
     return anomalies || detectAnomalies(transactions, 2.0);
@@ -76,6 +131,12 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
   const behavioral = useMemo(() => {
     return analyzeBehavioralPatterns(transactions);
   }, [transactions]);
+
+  // Quick-glance ring metrics for the dashboard header
+  const totalBudget = useMemo(() => categoryStats.reduce((sum, c) => sum + c.budget, 0), [categoryStats]);
+  const totalSpentAllCategories = useMemo(() => categoryStats.reduce((sum, c) => sum + c.total, 0), [categoryStats]);
+  const budgetUsedPct = totalBudget > 0 ? (totalSpentAllCategories / totalBudget) * 100 : 0;
+  const anomalyRatePct = transactions.length > 0 ? (computedAnomalies.length / transactions.length) * 100 : 0;
 
   // Timeline dataset
   const fullTimeline = useMemo(() => {
@@ -153,7 +214,7 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
   const tooltipShadow = '0 4px 16px rgba(0,0,0,0.12)';
 
   return (
-    <div className="space-y-6 text-ink transition-colors duration-200">
+    <div key={chartsMountKey} className="space-y-6 text-ink transition-colors duration-200">
       {/* Top Behavioral Insights Ribbon */}
       <div className="rounded-2xl bg-insight/10 p-6 space-y-4 transition-colors duration-200">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -181,7 +242,7 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
           </div>
 
           <div className="flex items-center gap-2.5 shrink-0">
-            <div className="bg-surface rounded-xl p-3 text-center min-w-[120px] shadow-sm">
+            <div className="bg-surface rounded-xl p-3 text-center min-w-[120px]">
               <span className="text-xs text-ink-muted block">
                 Pico viernes
               </span>
@@ -190,7 +251,7 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
               </span>
               <span className="text-[10px] text-ink-muted block">vs. días laborales</span>
             </div>
-            <div className="bg-surface rounded-xl p-3 text-center min-w-[120px] shadow-sm">
+            <div className="bg-surface rounded-xl p-3 text-center min-w-[120px]">
               <span className="text-xs text-ink-muted block">
                 Anomalías &gt;2σ
               </span>
@@ -203,8 +264,36 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
         </div>
       </div>
 
+      {/* Quick-glance ring metrics */}
+      <div className="bg-surface rounded-2xl p-6 transition-colors">
+        <div className="flex items-baseline justify-between mb-5">
+          <h3 className="font-bold text-base text-ink">Panorama rápido</h3>
+          <span className="text-xs text-ink-muted">tres métricas clave del periodo</span>
+        </div>
+        <div className="flex flex-wrap items-start justify-around gap-6">
+          <ProgressRing
+            percent={budgetUsedPct}
+            color={budgetUsedPct > 100 ? 'var(--loss)' : 'var(--accent)'}
+            label={`${budgetUsedPct.toFixed(0)}% del presupuesto`}
+            sublabel="usado este periodo"
+          />
+          <ProgressRing
+            percent={behavioral.weekendPct}
+            color="var(--insight)"
+            label="Fin de semana"
+            sublabel="del gasto total"
+          />
+          <ProgressRing
+            percent={anomalyRatePct}
+            color="var(--loss)"
+            label="Transacciones atípicas"
+            sublabel={`${computedAnomalies.length} de ${transactions.length} movimientos`}
+          />
+        </div>
+      </div>
+
       {/* SECTION 1: INTERACTIVE TIMELINE / TIME SERIES */}
-      <div className="bg-surface rounded-2xl shadow-sm p-6 space-y-5 transition-colors">
+      <div className="bg-surface rounded-2xl p-6 space-y-5 transition-colors">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
@@ -494,7 +583,7 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
       {/* SECTION 2: INTERACTIVE CATEGORY DONUT & BUDGET COMPARISON */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Interactive Pie / Donut Chart */}
-        <div className="lg:col-span-5 bg-surface rounded-2xl shadow-sm p-6 space-y-4 flex flex-col justify-between transition-colors">
+        <div className="lg:col-span-5 bg-surface rounded-2xl p-6 space-y-4 flex flex-col justify-between transition-colors">
           <div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -625,7 +714,7 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
         </div>
 
         {/* Real vs Budget Grouped Bar Chart */}
-        <div className="lg:col-span-7 bg-surface rounded-2xl shadow-sm p-6 space-y-4 transition-colors">
+        <div className="lg:col-span-7 bg-surface rounded-2xl p-6 space-y-4 transition-colors">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <div className="flex items-center gap-2">
@@ -729,7 +818,7 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
       {/* SECTION 3: BEHAVIORAL DAY-OF-WEEK & TRANSACTION AMOUNT DISTRIBUTION */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Day of Week with Friday Spike Highlight */}
-        <div className="bg-surface rounded-2xl shadow-sm p-6 space-y-4 transition-colors">
+        <div className="bg-surface rounded-2xl p-6 space-y-4 transition-colors">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-bold text-lg text-ink">
@@ -807,7 +896,7 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
         </div>
 
         {/* Transaction Size Distribution (Histogram) */}
-        <div className="bg-surface rounded-2xl shadow-sm p-6 space-y-4 transition-colors">
+        <div className="bg-surface rounded-2xl p-6 space-y-4 transition-colors">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-bold text-lg text-ink">

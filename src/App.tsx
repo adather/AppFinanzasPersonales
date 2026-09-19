@@ -11,13 +11,13 @@ import {
   RotateCcw,
   Wallet,
   ArrowUpRight,
-  PieChart as PieChartIcon,
   Target,
   Sun,
   Moon,
   Menu,
   X,
   Cpu,
+  LayoutDashboard,
 } from 'lucide-react';
 import { Transaction, CategoryName, FinancialAnalysisResult, AnomalyItem, CategoryStat, SavingsGoal, GeminiModelId, AVAILABLE_GEMINI_MODELS } from './types';
 import { getInitialTransactions } from './data/initialTransactions';
@@ -40,6 +40,32 @@ import { VerbalExpenseModal } from './components/VerbalExpenseModal';
 import { AddTransactionModal } from './components/AddTransactionModal';
 import { AdvisorChatModal } from './components/AdvisorChatModal';
 import { ModelSelectorModal } from './components/ModelSelectorModal';
+
+// Minimal inline sparkline — shows the real 14-day spend trend behind the
+// hero number instead of a decorative icon. No axes/labels: at this size
+// the shape (rising, flat, spiky) is the point, not exact values.
+const Sparkline: React.FC<{ data: number[]; color: string }> = ({ data, color }) => {
+  const width = 100;
+  const height = 32;
+  const max = Math.max(...data, 1);
+  const stepX = data.length > 1 ? width / (data.length - 1) : width;
+  const points = data.map((v, i) => `${i * stepX},${height - (v / max) * height}`).join(' ');
+  const areaPoints = `0,${height} ${points} ${width},${height}`;
+
+  return (
+    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-8" preserveAspectRatio="none">
+      <polyline points={areaPoints} fill={color} opacity="0.12" stroke="none" />
+      <polyline
+        points={points}
+        fill="none"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+};
 
 export default function App() {
   // Local storage keys
@@ -135,7 +161,7 @@ export default function App() {
 
   // Active view tab
   type ActiveTab = 'executive' | 'anomalies' | 'patterns' | 'goals' | 'transactions';
-  const [activeTab, setActiveTab] = useState<ActiveTab>('executive');
+  const [activeTab, setActiveTab] = useState<ActiveTab>('patterns');
 
   // Mobile sidebar drawer state (sidebar is always visible from lg up)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -239,6 +265,23 @@ export default function App() {
   const totalBudget = useMemo(() => {
     return Object.values(DEFAULT_BUDGETS).reduce((sum, b) => sum + b, 0);
   }, []);
+
+  // Last-14-days daily spend, for the sparkline behind the hero stat
+  const last14DaysSpend = useMemo(() => {
+    const days = 14;
+    const today = new Date();
+    today.setHours(12, 0, 0, 0);
+    const startDate = new Date(today);
+    startDate.setDate(startDate.getDate() - (days - 1));
+
+    const buckets = new Array(days).fill(0);
+    currentTransactions.forEach((t) => {
+      const d = new Date(t.date + 'T12:00:00');
+      const diff = Math.round((d.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+      if (diff >= 0 && diff < days) buckets[diff] += t.amount;
+    });
+    return buckets;
+  }, [currentTransactions]);
 
   // Run AI Financial & Behavioral Economics Analysis
   const runDeepAnalysis = useCallback(async (modelOverride?: GeminiModelId) => {
@@ -456,8 +499,14 @@ export default function App() {
     badge?: number;
   }[] = [
     {
+      id: 'patterns',
+      label: 'Dashboard',
+      subtitle: 'Panorama general: patrones y visualizaciones de gasto',
+      icon: LayoutDashboard,
+    },
+    {
       id: 'executive',
-      label: 'Análisis ejecutivo',
+      label: 'Informe IA',
       subtitle: 'Diagnóstico financiero y behavioral economics',
       icon: BarChart3,
     },
@@ -467,12 +516,6 @@ export default function App() {
       subtitle: 'Gastos que superan el umbral estadístico (>2σ)',
       icon: AlertTriangle,
       badge: detectedAnomalies.length,
-    },
-    {
-      id: 'patterns',
-      label: 'Patrones',
-      subtitle: 'Visualizaciones de hábitos de consumo',
-      icon: TrendingUp,
     },
     {
       id: 'goals',
@@ -663,67 +706,66 @@ export default function App() {
         </header>
 
         <main className="flex-1 px-4 sm:px-6 py-6 space-y-6 max-w-[1400px] w-full mx-auto">
-          {/* Stat Cards Row */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 print:hidden">
-            {/* Total Spent — the hero figure */}
-            <div className="bg-surface rounded-2xl p-4 sm:p-5 flex items-center gap-3 sm:gap-4 shadow-sm">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-accent text-white flex items-center justify-center shrink-0">
-                <Wallet className="w-5 h-5" />
+          {/* Stat Strip — one unified surface, not four decorative icon-badge
+              boxes: numbers and their trend deltas carry the meaning, the
+              way an actual finance dashboard (Stripe/Mercury) reads. */}
+          <div className="bg-surface rounded-2xl shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 divide-rule sm:divide-x print:hidden">
+            {/* Total Spent — the hero figure, with its real 14-day trend
+                behind it instead of a decorative icon */}
+            <div className="p-5">
+              <div className="text-xs text-ink-muted">Gasto acumulado</div>
+              <div className="text-2xl sm:text-3xl font-bold text-ink mt-1">
+                ${totalSpent.toLocaleString('es-MX', { minimumFractionDigits: 0 })}
               </div>
-              <div className="min-w-0">
-                <div className="text-lg sm:text-xl font-bold text-ink truncate">
-                  ${totalSpent.toLocaleString('es-MX', { minimumFractionDigits: 0 })}
-                </div>
-                <div className="text-xs text-ink-muted">Gasto acumulado</div>
+              <div className="mt-2">
+                <Sparkline data={last14DaysSpend} color="var(--accent)" />
+              </div>
+              <div className="text-xs text-ink-muted mt-1">
+                de ${totalBudget.toLocaleString('es-MX')} presupuestados · 14 días
               </div>
             </div>
 
             {/* Budget Consumption */}
-            <div className="bg-surface rounded-2xl p-4 sm:p-5 flex items-center gap-3 sm:gap-4 shadow-sm">
-              <div
-                className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl text-white flex items-center justify-center shrink-0 ${
-                  budgetIsOver ? 'bg-loss' : 'bg-accent'
-                }`}
-              >
-                <PieChartIcon className="w-5 h-5" />
+            <div className="p-5">
+              <div className="text-xs text-ink-muted">% del presupuesto</div>
+              <div className={`text-2xl font-bold mt-1 ${budgetIsOver ? 'text-loss' : 'text-ink'}`}>
+                {((totalSpent / totalBudget) * 100).toFixed(1)}%
               </div>
-              <div className="min-w-0">
-                <div className={`text-lg sm:text-xl font-bold truncate ${budgetIsOver ? 'text-loss' : 'text-ink'}`}>
-                  {((totalSpent / totalBudget) * 100).toFixed(1)}%
-                </div>
-                <div className="text-xs text-ink-muted">del presupuesto</div>
+              <div className="w-full h-1.5 rounded-full bg-rule mt-2 overflow-hidden">
+                <div
+                  className={`h-full rounded-full ${budgetIsOver ? 'bg-loss' : 'bg-accent'}`}
+                  style={{ width: `${Math.min((totalSpent / totalBudget) * 100, 100)}%` }}
+                />
               </div>
             </div>
 
             {/* Statistical Anomalies Detected */}
-            <div className="bg-surface rounded-2xl p-4 sm:p-5 flex items-center gap-3 sm:gap-4 shadow-sm">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-loss text-white flex items-center justify-center shrink-0">
-                <AlertTriangle className="w-5 h-5" />
+            <div className="p-5">
+              <div className="text-xs text-ink-muted">Anomalías (&gt;{anomalyThreshold.toFixed(1)}σ)</div>
+              <div className="flex items-baseline gap-1.5 mt-1">
+                <AlertTriangle className="w-4 h-4 text-loss shrink-0" />
+                <span className="text-2xl font-bold text-loss">{detectedAnomalies.length}</span>
               </div>
-              <div className="min-w-0">
-                <div className="text-lg sm:text-xl font-bold text-loss truncate">{detectedAnomalies.length}</div>
-                <div className="text-xs text-ink-muted">Anomalías (&gt;{anomalyThreshold.toFixed(1)}σ)</div>
-              </div>
+              <div className="text-xs text-ink-muted mt-1">puntaje Z &gt; 2.0 respecto a la media</div>
             </div>
 
             {/* Comparison vs Previous Month */}
-            <div className="bg-surface rounded-2xl p-4 sm:p-5 flex items-center gap-3 sm:gap-4 shadow-sm">
-              <div
-                className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl text-white flex items-center justify-center shrink-0 ${
-                  spentIsHigherThanPrevious ? 'bg-loss' : 'bg-gain'
-                }`}
-              >
-                <ArrowUpRight className={`w-5 h-5 ${spentIsHigherThanPrevious ? '' : 'rotate-90'}`} />
-              </div>
-              <div className="min-w-0">
-                <div className={`text-lg sm:text-xl font-bold truncate ${spentIsHigherThanPrevious ? 'text-loss' : 'text-gain'}`}>
+            <div className="p-5">
+              <div className="text-xs text-ink-muted">vs. mes anterior</div>
+              <div className="flex items-baseline gap-1 mt-1">
+                <ArrowUpRight
+                  className={`w-4 h-4 shrink-0 ${spentIsHigherThanPrevious ? 'text-loss' : 'text-gain rotate-90'}`}
+                />
+                <span className={`text-2xl font-bold ${spentIsHigherThanPrevious ? 'text-loss' : 'text-gain'}`}>
                   {spentIsHigherThanPrevious ? '+' : ''}
                   {totalPreviousSpent > 0
                     ? (((totalSpent - totalPreviousSpent) / totalPreviousSpent) * 100).toFixed(1)
                     : 0}
                   %
-                </div>
-                <div className="text-xs text-ink-muted">vs. mes anterior</div>
+                </span>
+              </div>
+              <div className="text-xs text-ink-muted mt-1">
+                {spentIsHigherThanPrevious ? 'incremento en el periodo' : 'contención favorable de gasto'}
               </div>
             </div>
           </div>
