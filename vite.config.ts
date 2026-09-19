@@ -73,6 +73,15 @@ export default defineConfig(() => {
       },
     },
     server: {
+      port: 3000,
+      // The Python (FastAPI) backend owns /api in dev; started separately
+      // via "npm run dev:api" (see package.json "dev" for both at once).
+      proxy: {
+        '/api': {
+          target: 'http://localhost:8000',
+          changeOrigin: true,
+        },
+      },
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
       // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',

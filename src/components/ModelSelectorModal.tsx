@@ -100,7 +100,7 @@ export const ModelSelectorModal: React.FC<ModelSelectorModalProps> = ({
             <Info className="w-4 h-4 text-slate-500 dark:text-slate-400 shrink-0 mt-0.5" />
             <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
               Todos los modelos se ejecutan en el servidor de forma segura con el SDK oficial de{' '}
-              <strong className="text-slate-800 dark:text-slate-100 font-semibold">@google/genai</strong>. Puedes alternar libremente según tus prioridades de velocidad o exhaustividad analítica.
+              <strong className="text-slate-800 dark:text-slate-100 font-semibold">google-genai</strong> (Python). Puedes alternar libremente según tus prioridades de velocidad o exhaustividad analítica.
             </p>
           </div>
 

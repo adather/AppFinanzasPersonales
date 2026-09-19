@@ -34,17 +34,18 @@ Aplicación full-stack de finanzas personales y economía conductual (*behaviora
 
 ## 🛠️ Stack Tecnológico
 
-- **Frontend**: React 18, TypeScript, Tailwind CSS, Lucide React, Framer Motion / Motion.
-- **Backend / Servidor**: Node.js, Express, Vite en modo middleware.
-- **Inteligencia Artificial**: SDK oficial `@google/genai` (Google Gen AI SDK).
-  - Modelos soportados: `gemini-3.8-flash`, `gemini-3.1-flash-lite`, `gemini-flash-latest`, `gemini-2.5-pro`.
-  - Mecanismo de reintentos con retroceso exponencial (*exponential backoff*) y conmutación por error (*fallback*) ante picos de demanda (HTTP 503 / 429).
+- **Frontend**: React 19, TypeScript, Tailwind CSS 4, Lucide React, Framer Motion / Motion.
+- **Backend / Servidor**: Python, FastAPI, Uvicorn (ASGI). El frontend corre como servidor de desarrollo Vite independiente y hace proxy de `/api` hacia FastAPI; en producción, FastAPI sirve también el build estático del frontend.
+- **Inteligencia Artificial**: SDK oficial `google-genai` (Google Gen AI SDK para Python).
+  - Modelos soportados: `gemini-3.8-flash`, `gemini-3.1-flash-lite`, `gemini-flash-latest`, `gemini-3.1-pro-preview`.
+  - Mecanismo de reintentos con retroceso exponencial (*exponential backoff*) y conmutación por error (*fallback*) ante picos de demanda (HTTP 503 / 429), implementado en [server/gemini.py](server/gemini.py).
 
 ---
 
 ## 📋 Requisitos Previos
 
-- Node.js 18 o superior.
+- Node.js 18 o superior (frontend).
+- Python 3.10 o superior + [uv](https://docs.astral.sh/uv/) (backend).
 - npm o yarn.
 - Una API Key de Google Gemini (obtenible en [Google AI Studio](https://aistudio.google.com/)).
 
@@ -58,12 +59,18 @@ Aplicación full-stack de finanzas personales y economía conductual (*behaviora
    cd <NOMBRE_DEL_DIRECTORIO>
    ```
 
-2. **Instalar dependencias:**
+2. **Instalar dependencias del frontend:**
    ```bash
    npm install
    ```
 
-3. **Variables de entorno:**
+3. **Instalar dependencias del backend:**
+   ```bash
+   uv sync
+   ```
+   Esto crea el entorno virtual en `.venv/` e instala las dependencias fijadas en `uv.lock`. No necesitas activar el entorno manualmente: los scripts de `npm` (y los comandos de este README) usan `uv run`, que lo resuelve automáticamente.
+
+4. **Variables de entorno:**
    Copia el archivo `.env.example` a `.env`:
    ```bash
    cp .env.example .env
@@ -73,17 +80,18 @@ Aplicación full-stack de finanzas personales y economía conductual (*behaviora
    GEMINI_API_KEY="tu_api_key_de_gemini_aqui"
    ```
 
-4. **Iniciar en modo desarrollo:**
+5. **Iniciar en modo desarrollo** (levanta Vite en `:3000` y FastAPI en `:8000` a la vez):
    ```bash
    npm run dev
    ```
    La aplicación se abrirá en `http://localhost:3000`.
 
-5. **Construir para producción:**
+6. **Construir para producción:**
    ```bash
    npm run build
    npm start
    ```
+   `npm start` levanta únicamente FastAPI en el puerto 3000, sirviendo tanto la API como el build estático (`dist/`).
 
 ---
 
