@@ -449,14 +449,14 @@ export default function App() {
   return (
     <div id="financial-agent-app" className="min-h-screen bg-paper text-ink flex flex-col transition-colors duration-200">
       {/* Statement Header */}
-      <header className="sticky top-0 z-40 bg-paper/95 backdrop-blur-md border-b border-rule transition-colors duration-200">
+      <header className="sticky top-0 z-40 bg-paper/95 backdrop-blur-md border-b border-rule transition-colors duration-200 print:hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
           <div>
             <div className="flex items-baseline gap-2.5 flex-wrap">
-              <h1 className="font-display text-2xl text-ink tracking-tight">
+              <h1 className="font-display text-xl sm:text-2xl text-ink tracking-tight">
                 Agente de Análisis Financiero
               </h1>
-              <span className="text-xs text-ink-muted">economía conductual & estadística de gasto</span>
+              <span className="hidden sm:inline text-xs text-ink-muted">economía conductual & estadística de gasto</span>
             </div>
             <p className="text-xs text-ink-muted mt-1">
               Patrones de gasto, detección de anomalías (&gt;2σ) e insights accionables
@@ -490,31 +490,31 @@ export default function App() {
             <button
               id="open-receipt-modal-btn"
               onClick={() => setIsReceiptModalOpen(true)}
-              className="px-2.5 py-1.5 text-xs font-medium text-ink hover:text-gain border border-rule hover:border-gain/50 rounded-md transition flex items-center gap-1.5 cursor-pointer"
+              className="p-1.5 sm:px-2.5 sm:py-1.5 text-xs font-medium text-ink hover:text-gain border border-rule hover:border-gain/50 rounded-md transition flex items-center gap-1.5 cursor-pointer"
               title="Escanear ticket o recibo con IA"
             >
               <Camera className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">Escanear</span> Recibo
+              <span className="hidden sm:inline"><span className="hidden md:inline">Escanear</span> Recibo</span>
             </button>
 
             <button
               id="open-verbal-modal-btn"
               onClick={() => setIsVerbalModalOpen(true)}
-              className="px-2.5 py-1.5 text-xs font-medium text-ink hover:text-gain border border-rule hover:border-gain/50 rounded-md transition flex items-center gap-1.5 cursor-pointer"
+              className="p-1.5 sm:px-2.5 sm:py-1.5 text-xs font-medium text-ink hover:text-gain border border-rule hover:border-gain/50 rounded-md transition flex items-center gap-1.5 cursor-pointer"
               title="Dictar o escribir gasto en lenguaje natural"
             >
               <Mic className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">Gasto</span> Verbal
+              <span className="hidden sm:inline"><span className="hidden md:inline">Gasto</span> Verbal</span>
             </button>
 
             <button
               id="open-add-modal-btn"
               onClick={() => setIsAddModalOpen(true)}
-              className="px-2.5 py-1.5 text-xs font-medium text-ink hover:text-ink border border-rule hover:border-ink/40 rounded-md transition flex items-center gap-1.5 cursor-pointer"
+              className="p-1.5 sm:px-2.5 sm:py-1.5 text-xs font-medium text-ink hover:text-ink border border-rule hover:border-ink/40 rounded-md transition flex items-center gap-1.5 cursor-pointer"
               title="Agregar gasto manual"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">Manual</span>
+              <span className="hidden sm:inline">Manual</span>
             </button>
 
             <button
@@ -535,11 +535,11 @@ export default function App() {
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         {/* Statement Summary Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 divide-y divide-x-0 md:divide-y-0 md:divide-x divide-rule border border-rule rounded-md overflow-hidden">
-          {/* Total Spent */}
+        <div className="grid grid-cols-2 md:grid-cols-4 divide-y divide-x-0 md:divide-y-0 md:divide-x divide-rule border border-rule rounded-md overflow-hidden print:hidden">
+          {/* Total Spent — the hero figure of the statement */}
           <div className="p-4">
             <span className="text-xs text-ink-muted block">Gasto acumulado</span>
-            <div className="font-display text-2xl text-ink mt-1">
+            <div className="font-display text-3xl text-ink mt-1">
               ${totalSpent.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
             </div>
             <div className="text-xs text-ink-muted mt-1 font-mono">
@@ -606,7 +606,7 @@ export default function App() {
         </div>
 
         {/* Tab Navigation Controls */}
-        <div className="flex items-center justify-between border-b border-rule transition-colors duration-200">
+        <div className="flex items-center justify-between border-b border-rule transition-colors duration-200 relative print:hidden">
           <nav className="flex items-center gap-4 sm:gap-6 overflow-x-auto">
             <button
               id="tab-executive-btn"
@@ -684,6 +684,11 @@ export default function App() {
             </button>
           </nav>
 
+          {/* Scroll hint: this row can overflow on narrow screens with all 5 tabs.
+              Positioned at right-0 since the "Datos demo" button next to it is
+              itself hidden below sm (only visible where nav no longer overflows). */}
+          <div className="sm:hidden pointer-events-none absolute right-0 top-0 bottom-2.5 w-8 bg-gradient-to-l from-paper to-transparent" />
+
           <button
             id="reset-demo-data-btn"
             type="button"
@@ -757,16 +762,16 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="mt-auto border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-4 text-center text-xs text-slate-400 dark:text-slate-500 transition-colors duration-200">
+      <footer className="mt-auto border-t border-rule bg-paper py-4 text-center text-xs text-ink-muted transition-colors duration-200 print:hidden">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <span>Agente de Análisis Financiero Personal & Behavioral Economics</span>
           <div className="flex items-center gap-2">
-            <span>Motor activo: <strong className="text-slate-600 dark:text-slate-400 font-semibold">{currentModelMeta.name}</strong></span>
-            <span>•</span>
+            <span>Motor activo: <strong className="text-ink font-semibold">{currentModelMeta.name}</strong></span>
+            <span className="text-rule">·</span>
             <span>Detección Z-Score (&gt;2σ)</span>
             <button
               onClick={() => setIsModelSelectorOpen(true)}
-              className="text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 underline ml-1 cursor-pointer font-medium"
+              className="text-ink hover:text-ink/70 underline ml-1 cursor-pointer font-medium"
             >
               Cambiar modelo
             </button>

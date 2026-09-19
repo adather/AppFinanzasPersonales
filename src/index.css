@@ -57,4 +57,36 @@
     background-color: var(--color-paper);
     color: var(--color-ink);
   }
+
+  /* The flat ledger buttons dropped the old focus rings/shadows along with
+     everything else — keep keyboard focus clearly visible without them. */
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+  }
+}
+
+/* Printing the Executive Analysis ("Exportar informe") should always read
+   as ink-on-paper, even mid-dark-mode — never white text on a black page. */
+@media print {
+  :root,
+  .dark {
+    --paper: #ffffff;
+    --surface: #f4f6ef;
+    --ink: #1f2a24;
+    --ink-muted: #5b6459;
+    --rule: #c9d0c2;
+    --loss: #a23b2e;
+    --gain: #2f6b4f;
+    --insight: #b8862e;
+  }
+
+  body {
+    background: #ffffff;
+  }
 }

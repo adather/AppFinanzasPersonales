@@ -284,8 +284,94 @@ export const TransactionListView: React.FC<TransactionListViewProps> = ({
         </div>
       </div>
 
-      {/* Transactions Table */}
-      <div className="border border-rule overflow-hidden">
+      {/* Transactions — stacked cards on mobile, full table from md up */}
+      {sorted.length === 0 ? (
+        <div className="py-12 text-center border-y border-rule space-y-2">
+          <Search className="w-6 h-6 text-ink-muted mx-auto" />
+          {transactions.length === 0 ? (
+            <>
+              <p className="text-sm text-ink">Todavía no registras ningún gasto</p>
+              <p className="text-xs text-ink-muted">
+                Usa "Manual", "Gasto Verbal" o "Escanear Recibo" en la parte superior para empezar.
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-ink">Ninguna transacción coincide con estos filtros</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchTerm('');
+                  setSelectedCategory('all');
+                  setOnlyAnomalies(false);
+                }}
+                className="text-xs text-ink underline hover:text-ink/70 cursor-pointer"
+              >
+                Limpiar filtros
+              </button>
+            </>
+          )}
+        </div>
+      ) : (
+        <div className="md:hidden divide-y divide-rule border-y border-rule">
+          {sorted.map((tx) => {
+            const catColor = CATEGORY_COLORS[tx.category] || '#6B7280';
+            return (
+              <div key={tx.id} className="py-3.5 space-y-1.5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="font-medium text-ink text-sm">{tx.concept}</div>
+                  <div className="font-mono text-ink text-sm shrink-0">
+                    ${tx.amount.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                  </div>
+                </div>
+                <div className="text-xs text-ink-muted flex items-center gap-1 flex-wrap">
+                  <span>{tx.merchant}</span>
+                  {tx.note && (
+                    <span className="italic flex items-center gap-1">
+                      <span className="text-rule">·</span> {tx.note}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between gap-2 pt-0.5">
+                  <div className="flex items-center gap-2 flex-wrap text-xs text-ink-muted">
+                    <span className="font-mono">{tx.date}</span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: catColor }} />
+                      {tx.category}
+                    </span>
+                    {tx.rawSource === 'receipt' ? (
+                      <span className="inline-flex items-center gap-1 text-insight" title="Extraído con IA desde Recibo">
+                        <Camera className="w-3 h-3" /> Recibo
+                      </span>
+                    ) : tx.rawSource === 'verbal' ? (
+                      <span className="inline-flex items-center gap-1 text-insight" title="Dictado verbal o texto natural">
+                        <Mic className="w-3 h-3" /> Verbal
+                      </span>
+                    ) : null}
+                    {tx.isAnomaly && (
+                      <span className="inline-flex items-center gap-1 font-mono text-loss">
+                        <AlertTriangle className="w-3 h-3" />
+                        {tx.zScore ? `+${tx.zScore}σ` : '>2σ'}
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => onDeleteTransaction(tx.id)}
+                    className="p-1.5 -m-1.5 text-ink-muted hover:text-loss hover:bg-loss/10 rounded-md transition cursor-pointer shrink-0"
+                    title="Eliminar transacción"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {sorted.length > 0 && (
+      <div className="hidden md:block border border-rule overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-sm">
             <thead>
@@ -300,14 +386,7 @@ export const TransactionListView: React.FC<TransactionListViewProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-rule">
-              {sorted.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="py-12 text-center text-ink-muted text-xs">
-                    No se encontraron transacciones con los criterios de búsqueda actuales.
-                  </td>
-                </tr>
-              ) : (
-                sorted.map((tx) => {
+              {sorted.map((tx) => {
                   const catColor = CATEGORY_COLORS[tx.category] || '#6B7280';
                   return (
                     <tr key={tx.id} className="hover:bg-surface transition group">
@@ -374,12 +453,12 @@ export const TransactionListView: React.FC<TransactionListViewProps> = ({
                       </td>
                     </tr>
                   );
-                })
-              )}
+              })}
             </tbody>
           </table>
         </div>
       </div>
+      )}
     </div>
   );
 };

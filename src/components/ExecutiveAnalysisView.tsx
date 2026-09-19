@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion, useReducedMotion } from 'motion/react';
 import {
   Sparkles,
   TrendingUp,
@@ -13,6 +14,7 @@ import {
   RefreshCw,
   HelpCircle,
   Cpu,
+  Printer,
 } from 'lucide-react';
 import { FinancialAnalysisResult, CategoryStat, GeminiModelId, AVAILABLE_GEMINI_MODELS } from '../types';
 
@@ -40,6 +42,7 @@ export const ExecutiveAnalysisView: React.FC<ExecutiveAnalysisViewProps> = ({
   onOpenModelSelector,
 }) => {
   const currentModelMeta = AVAILABLE_GEMINI_MODELS.find((m) => m.id === selectedModel) || AVAILABLE_GEMINI_MODELS[0];
+  const prefersReducedMotion = useReducedMotion();
 
   return (
     <div className="space-y-10 text-ink transition-colors duration-200">
@@ -79,7 +82,17 @@ export const ExecutiveAnalysisView: React.FC<ExecutiveAnalysisViewProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 print:hidden">
+          <button
+            id="export-report-btn"
+            type="button"
+            onClick={() => window.print()}
+            className="px-3.5 py-2 text-xs font-medium text-ink-muted hover:text-ink border border-rule hover:border-ink/40 rounded-md transition flex items-center gap-1.5 cursor-pointer"
+            title="Exportar este informe como PDF (usa el diálogo de impresión del navegador)"
+          >
+            <Printer className="w-4 h-4" />
+            Exportar informe
+          </button>
           {onOpenAdvisorChat && (
             <button
               id="open-advisor-chat-from-report-btn"
@@ -340,8 +353,17 @@ export const ExecutiveAnalysisView: React.FC<ExecutiveAnalysisViewProps> = ({
           )}
         </section>
 
-        {/* Patrones Proactivos Detectados */}
-        <section id="patrones-proactivos-section" className="p-6 bg-ink text-paper space-y-4">
+        {/* Patrones Proactivos Detectados — the one deliberate motion moment on
+            this page: reveals itself when a fresh AI analysis lands, marking
+            this panel as "the AI noticed something," not decoration. */}
+        <motion.section
+          key={analysis?.generatedAt || 'pending'}
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          id="patrones-proactivos-section"
+          className="p-6 bg-ink text-paper space-y-4"
+        >
           <div className="flex items-center justify-between flex-wrap gap-2">
             <h3 className="font-display text-lg flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-insight" />
@@ -369,7 +391,7 @@ export const ExecutiveAnalysisView: React.FC<ExecutiveAnalysisViewProps> = ({
             <span>metodología: Z-Score (&gt;2σ) + behavioral economics</span>
             <span className="text-insight opacity-100 font-medium">{currentModelMeta.shortName}</span>
           </div>
-        </section>
+        </motion.section>
       </div>
     </div>
   );
