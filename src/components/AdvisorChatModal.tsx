@@ -132,23 +132,22 @@ export const AdvisorChatModal: React.FC<AdvisorChatModalProps> = ({
 
   return (
     <div id="advisor-modal-backdrop" className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto">
-      <div id="advisor-modal-card" className="bg-paper rounded-lg shadow-xl border border-rule w-full max-w-2xl h-[620px] flex flex-col overflow-hidden my-4 transition-colors">
+      <div id="advisor-modal-card" className="bg-surface rounded-2xl shadow-xl w-full max-w-2xl h-[620px] flex flex-col overflow-hidden my-4 transition-colors">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-rule">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-md border border-rule text-insight flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-accent text-white flex items-center justify-center shrink-0">
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-display text-lg text-ink">Asesor de Behavioral Economics</h3>
+                <h3 className="font-bold text-lg text-ink">Asesor de Behavioral Economics</h3>
                 <button
                   type="button"
                   onClick={onOpenModelSelector}
                   title="Cambiar modelo de IA"
-                  className="text-[10px] font-medium text-ink-muted hover:text-ink border border-rule px-2 py-0.5 rounded-md transition flex items-center gap-1 cursor-pointer"
+                  className="bg-accent-soft text-accent hover:bg-accent/20 rounded-full px-2.5 py-1 text-[11px] font-medium transition flex items-center gap-1 cursor-pointer"
                 >
-                  <Sparkles className="w-2.5 h-2.5 text-insight" />
                   {modelMeta.shortName}
                 </button>
               </div>
@@ -160,7 +159,7 @@ export const AdvisorChatModal: React.FC<AdvisorChatModalProps> = ({
           <button
             id="close-advisor-chat-btn"
             onClick={onClose}
-            className="p-2 text-ink-muted hover:text-ink rounded-md hover:bg-surface transition cursor-pointer"
+            className="p-2 text-ink-muted hover:text-ink hover:bg-rule/50 rounded-lg transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -174,20 +173,20 @@ export const AdvisorChatModal: React.FC<AdvisorChatModalProps> = ({
               className={`flex gap-3 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               {m.role === 'model' && (
-                <div className="w-8 h-8 rounded-md border border-rule text-insight flex items-center justify-center shrink-0 mt-0.5">
+                <div className="w-8 h-8 rounded-full bg-insight/15 text-insight flex items-center justify-center shrink-0 mt-0.5">
                   <Bot className="w-4 h-4" />
                 </div>
               )}
 
               <div
-                className={`max-w-[82%] rounded-md px-4 py-3 text-sm leading-relaxed ${
+                className={`max-w-[82%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
                   m.role === 'user'
-                    ? 'bg-ink text-paper'
-                    : 'bg-paper text-ink border border-rule'
+                    ? 'bg-accent text-white'
+                    : 'bg-surface shadow-sm text-ink'
                 }`}
               >
                 {m.role === 'model' && (
-                  <div className="flex items-center gap-1.5 text-[10px] text-insight mb-1.5">
+                  <div className="flex items-center gap-1.5 text-[10px] font-medium text-insight mb-1.5">
                     <Sparkles className="w-3 h-3" />
                     Respuesta del asesor IA
                   </div>
@@ -195,7 +194,7 @@ export const AdvisorChatModal: React.FC<AdvisorChatModalProps> = ({
                 <div className="whitespace-pre-wrap">{m.content}</div>
                 <div
                   className={`text-[10px] mt-1.5 font-mono ${
-                    m.role === 'user' ? 'text-paper/60 text-right' : 'text-ink-muted'
+                    m.role === 'user' ? 'text-white/70 text-right' : 'text-ink-muted'
                   }`}
                 >
                   {m.timestamp}
@@ -203,7 +202,7 @@ export const AdvisorChatModal: React.FC<AdvisorChatModalProps> = ({
               </div>
 
               {m.role === 'user' && (
-                <div className="w-8 h-8 rounded-md border border-rule text-ink-muted flex items-center justify-center shrink-0 mt-0.5">
+                <div className="w-8 h-8 rounded-full bg-accent-soft text-accent flex items-center justify-center shrink-0 mt-0.5">
                   <User className="w-4 h-4" />
                 </div>
               )}
@@ -212,11 +211,11 @@ export const AdvisorChatModal: React.FC<AdvisorChatModalProps> = ({
 
           {isLoading && (
             <div className="flex gap-3 justify-start items-center">
-              <div className="w-8 h-8 rounded-md border border-rule text-insight flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-full bg-insight/15 text-insight flex items-center justify-center shrink-0">
                 <Bot className="w-4 h-4" />
               </div>
-              <div className="bg-paper text-ink-muted border border-rule rounded-md px-4 py-2.5 text-xs flex items-center gap-2">
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-insight" />
+              <div className="bg-surface shadow-sm text-ink-muted rounded-2xl px-4 py-2.5 text-xs flex items-center gap-2">
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-accent" />
                 El asesor está formulando una recomendación conductual...
               </div>
             </div>
@@ -226,7 +225,7 @@ export const AdvisorChatModal: React.FC<AdvisorChatModalProps> = ({
         </div>
 
         {/* Quick Suggestion Chips */}
-        <div className="px-6 py-2 border-t border-rule flex items-center gap-2 overflow-x-auto">
+        <div className="px-6 py-2.5 border-t border-rule flex items-center gap-2 overflow-x-auto">
           <span className="text-[11px] text-ink-muted shrink-0 flex items-center gap-1">
             <Lightbulb className="w-3 h-3 text-insight" /> Sugerencias:
           </span>
@@ -235,7 +234,7 @@ export const AdvisorChatModal: React.FC<AdvisorChatModalProps> = ({
               key={i}
               type="button"
               onClick={() => handleSend(p)}
-              className="text-[11px] text-ink-muted hover:text-ink border border-rule hover:border-ink/40 rounded-md px-2.5 py-1 whitespace-nowrap transition cursor-pointer"
+              className="text-[11px] text-ink-muted hover:text-ink bg-rule/50 hover:bg-rule rounded-full px-2.5 py-1 whitespace-nowrap transition cursor-pointer"
             >
               {p}
             </button>
@@ -256,14 +255,14 @@ export const AdvisorChatModal: React.FC<AdvisorChatModalProps> = ({
               }
             }}
             placeholder="Escribe tu duda sobre tus patrones de gasto o economía conductual..."
-            className="flex-1 px-4 py-2.5 text-sm border border-rule bg-paper text-ink rounded-md focus:ring-1 focus:ring-ink focus:outline-none"
+            className="flex-1 px-4 py-2.5 text-sm border border-rule bg-paper text-ink rounded-lg focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none transition"
           />
           <button
             id="send-advisor-chat-btn"
             type="button"
             disabled={!input.trim() || isLoading}
             onClick={() => handleSend()}
-            className="p-2.5 bg-ink hover:bg-ink/85 disabled:opacity-40 text-paper rounded-md transition shrink-0 cursor-pointer"
+            className="p-2.5 bg-accent hover:bg-accent/90 disabled:opacity-40 text-white rounded-lg transition shrink-0 cursor-pointer"
           >
             <Send className="w-4 h-4" />
           </button>

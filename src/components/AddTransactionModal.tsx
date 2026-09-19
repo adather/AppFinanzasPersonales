@@ -70,21 +70,21 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
 
   return (
     <div id="add-modal-backdrop" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 overflow-y-auto">
-      <div id="add-modal-card" className="bg-paper border border-rule rounded-lg w-full max-w-lg overflow-hidden my-8">
+      <div id="add-modal-card" className="bg-surface rounded-2xl shadow-xl w-full max-w-lg overflow-hidden my-8">
         <div className="flex items-center justify-between px-6 py-4 border-b border-rule">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-md border border-rule text-ink flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-accent-soft text-accent flex items-center justify-center shrink-0">
               <PlusCircle className="w-4.5 h-4.5" />
             </div>
             <div>
-              <h3 className="font-display text-lg text-ink">Nuevo gasto manual</h3>
+              <h3 className="font-bold text-lg text-ink">Nuevo gasto manual</h3>
               <p className="text-xs text-ink-muted">Ingresa los datos para alimentar el modelo estadístico</p>
             </div>
           </div>
           <button
             id="close-add-modal-btn"
             onClick={onClose}
-            className="p-2 text-ink-muted hover:text-ink hover:bg-surface rounded-md transition"
+            className="p-2 text-ink-muted hover:text-ink hover:bg-rule/50 rounded-lg transition"
           >
             <X className="w-5 h-5" />
           </button>
@@ -92,20 +92,20 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-xs text-ink-muted mb-1">Concepto o descripción *</label>
+            <label className="block text-xs font-medium text-ink-muted mb-1">Concepto o descripción *</label>
             <input
               type="text"
               required
               value={concept}
               onChange={(e) => setConcept(e.target.value)}
               placeholder="Ej: Despensa semanal, Gasolina, Cena familiar..."
-              className="w-full text-sm px-3.5 py-2 border border-rule bg-paper text-ink rounded-md focus:border-ink/50 focus:outline-none"
+              className="w-full text-sm px-3.5 py-2 border border-rule bg-paper text-ink rounded-lg focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs text-ink-muted mb-1">Monto ($) *</label>
+              <label className="block text-xs font-medium text-ink-muted mb-1">Monto ($) *</label>
               <input
                 type="number"
                 step="0.01"
@@ -113,28 +113,28 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.00"
-                className="w-full text-sm font-mono px-3.5 py-2 border border-rule bg-paper text-ink rounded-md focus:border-ink/50 focus:outline-none"
+                className="w-full text-sm font-mono px-3.5 py-2 border border-rule bg-paper text-ink rounded-lg focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none"
               />
             </div>
             <div>
-              <label className="block text-xs text-ink-muted mb-1">Fecha *</label>
+              <label className="block text-xs font-medium text-ink-muted mb-1">Fecha *</label>
               <input
                 type="date"
                 required
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full text-sm font-mono px-3.5 py-2 border border-rule bg-paper text-ink rounded-md focus:border-ink/50 focus:outline-none"
+                className="w-full text-sm font-mono px-3.5 py-2 border border-rule bg-paper text-ink rounded-lg focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs text-ink-muted mb-1">Categoría</label>
+              <label className="block text-xs font-medium text-ink-muted mb-1">Categoría</label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value as CategoryName)}
-                className="w-full text-sm px-3 py-2 border border-rule rounded-md bg-paper text-ink focus:border-ink/50 focus:outline-none"
+                className="w-full text-sm px-3 py-2 border border-rule rounded-lg bg-paper text-ink focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none"
               >
                 {CATEGORIES.map((c) => (
                   <option key={c} value={c}>{c}</option>
@@ -142,43 +142,43 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
               </select>
             </div>
             <div>
-              <label className="block text-xs text-ink-muted mb-1">Comercio o lugar</label>
+              <label className="block text-xs font-medium text-ink-muted mb-1">Comercio o lugar</label>
               <input
                 type="text"
                 value={merchant}
                 onChange={(e) => setMerchant(e.target.value)}
                 placeholder="Ej: Walmart, Starbucks, Pemex..."
-                className="w-full text-sm px-3.5 py-2 border border-rule bg-paper text-ink rounded-md focus:border-ink/50 focus:outline-none"
+                className="w-full text-sm px-3.5 py-2 border border-rule bg-paper text-ink rounded-lg focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs text-ink-muted mb-1">Notas adicionales (opcional)</label>
+            <label className="block text-xs font-medium text-ink-muted mb-1">Notas adicionales (opcional)</label>
             <input
               type="text"
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="Ej: Salida especial, pago con tarjeta de crédito..."
-              className="w-full text-sm px-3.5 py-2 border border-rule bg-paper text-ink rounded-md focus:border-ink/50 focus:outline-none"
+              className="w-full text-sm px-3.5 py-2 border border-rule bg-paper text-ink rounded-lg focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none"
             />
           </div>
 
           {error && (
-            <p className="text-xs text-loss">{error}</p>
+            <p className="text-xs text-loss bg-loss/10 rounded-lg px-3 py-2">{error}</p>
           )}
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-rule">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium border border-rule text-ink-muted hover:text-ink rounded-md transition"
+              className="px-4 py-2 text-sm font-medium bg-rule/50 hover:bg-rule text-ink-muted hover:text-ink rounded-lg transition"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-5 py-2 text-sm font-medium text-paper bg-ink hover:bg-ink/85 rounded-md transition flex items-center gap-2"
+              className="px-5 py-2 text-sm font-medium text-white bg-accent hover:bg-accent/90 rounded-lg transition flex items-center gap-2"
             >
               <Check className="w-4 h-4" /> Guardar
             </button>

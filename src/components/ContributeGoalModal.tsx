@@ -42,18 +42,18 @@ export const ContributeGoalModal: React.FC<ContributeGoalModalProps> = ({
 
   return (
     <div id="contribute-modal-backdrop" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-      <div id="contribute-modal-card" className="bg-paper border border-rule rounded-lg w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-150 transition-colors">
+      <div id="contribute-modal-card" className="bg-surface rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-150 transition-colors">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-rule">
           <div>
             <span className="text-xs text-ink-muted">
               Registrar aporte
             </span>
-            <h3 className="font-display text-lg text-ink">{goal.title}</h3>
+            <h3 className="font-bold text-lg text-ink">{goal.title}</h3>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-ink-muted hover:text-ink hover:bg-surface rounded-md transition cursor-pointer"
+            className="p-2 text-ink-muted hover:text-ink hover:bg-rule/50 rounded-lg transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -61,7 +61,7 @@ export const ContributeGoalModal: React.FC<ContributeGoalModalProps> = ({
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4 text-xs">
           {/* Current Status */}
-          <div className="p-3 border border-rule flex items-center justify-between">
+          <div className="p-3 bg-paper rounded-lg flex items-center justify-between">
             <div>
               <span className="text-ink-muted block text-[11px]">Ahorro acumulado</span>
               <span className="font-medium text-ink font-mono text-sm">
@@ -78,7 +78,7 @@ export const ContributeGoalModal: React.FC<ContributeGoalModalProps> = ({
 
           {/* Amount input */}
           <div>
-            <label className="text-xs text-ink-muted block mb-1">Monto a aportar ($)</label>
+            <label className="text-xs font-medium text-ink-muted block mb-1">Monto a aportar ($)</label>
             <div className="relative">
               <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-muted font-medium">$</span>
               <input
@@ -88,7 +88,7 @@ export const ContributeGoalModal: React.FC<ContributeGoalModalProps> = ({
                 step="50"
                 value={amountStr}
                 onChange={(e) => setAmountStr(e.target.value)}
-                className="w-full pl-8 pr-3 py-2.5 text-base border border-rule bg-paper rounded-md font-mono font-medium text-ink focus:border-ink/50 focus:outline-none"
+                className="w-full pl-8 pr-3 py-2.5 text-base border border-rule bg-paper rounded-lg font-mono font-medium text-ink focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none"
               />
             </div>
 
@@ -99,7 +99,7 @@ export const ContributeGoalModal: React.FC<ContributeGoalModalProps> = ({
                   key={q}
                   type="button"
                   onClick={() => setAmountStr(String(q))}
-                  className="flex-1 py-1 text-[11px] font-medium font-mono border border-rule hover:border-ink/40 text-ink-muted hover:text-ink rounded-md transition cursor-pointer"
+                  className="flex-1 py-1 text-[11px] font-medium font-mono bg-rule/50 hover:bg-accent-soft text-ink-muted hover:text-accent rounded-lg transition cursor-pointer"
                 >
                   +${q}
                 </button>
@@ -109,7 +109,7 @@ export const ContributeGoalModal: React.FC<ContributeGoalModalProps> = ({
 
           {/* Dynamic Impact Simulation Card */}
           {deposit > 0 && (
-            <div className="p-3.5 bg-gain/10 border border-gain/30 text-ink space-y-1.5">
+            <div className="p-3.5 bg-gain/10 text-ink rounded-lg space-y-1.5">
               <div className="flex items-center gap-1.5 font-medium text-gain">
                 <TrendingDown className="w-4 h-4" />
                 <span>Impacto positivo inmediato</span>
@@ -130,13 +130,13 @@ export const ContributeGoalModal: React.FC<ContributeGoalModalProps> = ({
 
           {/* Note */}
           <div>
-            <label className="text-xs text-ink-muted block mb-1">Nota o concepto (opcional)</label>
+            <label className="text-xs font-medium text-ink-muted block mb-1">Nota o concepto (opcional)</label>
             <input
               type="text"
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="ej. Ahorro de la quincena, venta de artículo, etc."
-              className="w-full px-3 py-2 text-xs border border-rule bg-paper text-ink rounded-md focus:border-ink/50 focus:outline-none"
+              className="w-full px-3 py-2 text-xs border border-rule bg-paper text-ink rounded-lg focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none"
             />
           </div>
 
@@ -145,13 +145,13 @@ export const ContributeGoalModal: React.FC<ContributeGoalModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-medium border border-rule text-ink-muted hover:text-ink rounded-md transition cursor-pointer"
+              className="px-4 py-2 text-xs font-medium bg-rule/50 hover:bg-rule text-ink-muted hover:text-ink rounded-lg transition cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 text-xs font-semibold bg-ink text-paper hover:bg-ink/85 rounded-md transition flex items-center gap-1.5 cursor-pointer"
+              className="px-5 py-2.5 text-xs font-semibold bg-accent text-white hover:bg-accent/90 rounded-lg transition flex items-center gap-1.5 cursor-pointer"
             >
               <CheckCircle className="w-4 h-4" />
               Confirmar aporte

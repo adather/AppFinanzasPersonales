@@ -9,15 +9,15 @@ import {
   ListOrdered,
   MessageSquare,
   RotateCcw,
-  ShieldAlert,
   Wallet,
-  Calendar,
-  CheckCircle2,
   ArrowUpRight,
   PieChart as PieChartIcon,
   Target,
   Sun,
   Moon,
+  Menu,
+  X,
+  Cpu,
 } from 'lucide-react';
 import { Transaction, CategoryName, FinancialAnalysisResult, AnomalyItem, CategoryStat, SavingsGoal, GeminiModelId, AVAILABLE_GEMINI_MODELS } from './types';
 import { getInitialTransactions } from './data/initialTransactions';
@@ -40,7 +40,6 @@ import { VerbalExpenseModal } from './components/VerbalExpenseModal';
 import { AddTransactionModal } from './components/AddTransactionModal';
 import { AdvisorChatModal } from './components/AdvisorChatModal';
 import { ModelSelectorModal } from './components/ModelSelectorModal';
-import { Cpu } from 'lucide-react';
 
 export default function App() {
   // Local storage keys
@@ -137,6 +136,9 @@ export default function App() {
   // Active view tab
   type ActiveTab = 'executive' | 'anomalies' | 'patterns' | 'goals' | 'transactions';
   const [activeTab, setActiveTab] = useState<ActiveTab>('executive');
+
+  // Mobile sidebar drawer state (sidebar is always visible from lg up)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Modals state
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
@@ -446,75 +448,204 @@ export default function App() {
     }
   };
 
+  const navItems: {
+    id: ActiveTab;
+    label: string;
+    subtitle: string;
+    icon: typeof BarChart3;
+    badge?: number;
+  }[] = [
+    {
+      id: 'executive',
+      label: 'Análisis ejecutivo',
+      subtitle: 'Diagnóstico financiero y behavioral economics',
+      icon: BarChart3,
+    },
+    {
+      id: 'anomalies',
+      label: 'Anomalías',
+      subtitle: 'Gastos que superan el umbral estadístico (>2σ)',
+      icon: AlertTriangle,
+      badge: detectedAnomalies.length,
+    },
+    {
+      id: 'patterns',
+      label: 'Patrones',
+      subtitle: 'Visualizaciones de hábitos de consumo',
+      icon: TrendingUp,
+    },
+    {
+      id: 'goals',
+      label: 'Metas de ahorro',
+      subtitle: 'Seguimiento y consejos de ahorro con IA',
+      icon: Target,
+      badge: savingsGoals.length,
+    },
+    {
+      id: 'transactions',
+      label: 'Transacciones',
+      subtitle: 'Historial completo de movimientos',
+      icon: ListOrdered,
+      badge: enrichedTransactions.length,
+    },
+  ];
+  const activeNavItem = navItems.find((item) => item.id === activeTab) || navItems[0];
+  const budgetIsOver = totalSpent / totalBudget > 1;
+  const spentIsHigherThanPrevious = totalSpent > totalPreviousSpent;
+
   return (
-    <div id="financial-agent-app" className="min-h-screen bg-paper text-ink flex flex-col transition-colors duration-200">
-      {/* Statement Header */}
-      <header className="sticky top-0 z-40 bg-paper/95 backdrop-blur-md border-b border-rule transition-colors duration-200 print:hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
-          <div>
-            <div className="flex items-baseline gap-2.5 flex-wrap">
-              <h1 className="font-display text-xl sm:text-2xl text-ink tracking-tight">
-                Agente de Análisis Financiero
-              </h1>
-              <span className="hidden sm:inline text-xs text-ink-muted">economía conductual & estadística de gasto</span>
+    <div id="financial-agent-app" className="min-h-screen flex bg-paper text-ink transition-colors duration-200">
+      {/* Sidebar */}
+      <aside
+        className={`fixed lg:sticky top-0 h-screen z-50 w-64 shrink-0 bg-sidebar border-r border-rule flex flex-col transition-transform duration-200 print:hidden ${
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        }`}
+      >
+        <div className="h-16 flex items-center gap-2.5 px-5 border-b border-rule shrink-0">
+          <div className="w-9 h-9 rounded-xl bg-accent text-white flex items-center justify-center shrink-0">
+            <Wallet className="w-4.5 h-4.5" />
+          </div>
+          <div className="min-w-0">
+            <div className="font-bold text-sm text-ink truncate">Agente Financiero</div>
+            <div className="text-[10px] text-ink-muted truncate">Behavioral Economics</div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsSidebarOpen(false)}
+            className="ml-auto lg:hidden p-1.5 text-ink-muted hover:text-ink rounded-md cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                id={`tab-${item.id}-btn`}
+                type="button"
+                onClick={() => {
+                  setActiveTab(item.id);
+                  setIsSidebarOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition cursor-pointer ${
+                  isActive ? 'bg-accent-soft text-accent' : 'text-ink-muted hover:bg-surface hover:text-ink'
+                }`}
+              >
+                <Icon className="w-[18px] h-[18px] shrink-0" />
+                <span className="flex-1 text-left truncate">{item.label}</span>
+                {typeof item.badge === 'number' && item.badge > 0 && (
+                  <span
+                    className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full shrink-0 ${
+                      isActive ? 'bg-accent text-white' : 'bg-rule text-ink-muted'
+                    }`}
+                  >
+                    {item.badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </nav>
+
+        <div className="p-3 border-t border-rule shrink-0">
+          <button
+            id="reset-demo-data-btn"
+            type="button"
+            onClick={handleResetDemoData}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs text-ink-muted hover:bg-surface hover:text-ink transition cursor-pointer"
+            title="Restablecer datos de ejemplo con anomalías estadísticas"
+          >
+            <RotateCcw className="w-4 h-4" />
+            <span>Restablecer datos demo</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Mobile sidebar backdrop */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* Main column */}
+      <div className="flex-1 min-w-0 flex flex-col">
+        {/* Topbar */}
+        <header className="sticky top-0 z-30 h-16 shrink-0 bg-paper/95 backdrop-blur-md border-b border-rule transition-colors duration-200 flex items-center justify-between gap-3 px-4 sm:px-6 print:hidden">
+          <div className="flex items-center gap-3 min-w-0">
+            <button
+              type="button"
+              onClick={() => setIsSidebarOpen(true)}
+              className="lg:hidden p-1.5 -ml-1 text-ink-muted hover:text-ink rounded-md cursor-pointer"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <div className="min-w-0">
+              <h1 className="font-bold text-base sm:text-lg text-ink truncate">{activeNavItem.label}</h1>
+              <p className="hidden sm:block text-xs text-ink-muted truncate">{activeNavItem.subtitle}</p>
             </div>
-            <p className="text-xs text-ink-muted mt-1">
-              Patrones de gasto, detección de anomalías (&gt;2σ) e insights accionables
-            </p>
           </div>
 
-          {/* Header Action Buttons */}
-          <div className="flex items-center gap-1.5 flex-wrap">
+          {/* Topbar Action Buttons */}
+          <div className="flex items-center gap-1.5 shrink-0">
             <button
               id="open-model-selector-header-btn"
               onClick={() => setIsModelSelectorOpen(true)}
-              className="px-2.5 py-1.5 text-xs text-ink-muted hover:text-ink border border-rule hover:border-ink/40 rounded-md transition flex items-center gap-1.5 cursor-pointer"
+              className="px-2.5 py-1.5 text-xs text-ink-muted hover:text-ink border border-rule hover:border-ink/40 rounded-lg transition items-center gap-1.5 cursor-pointer hidden sm:flex"
               title="Cambiar el modelo de Inteligencia Artificial (Gemini)"
             >
               <Cpu className="w-3.5 h-3.5" />
-              <span className="hidden lg:inline">IA:</span>
               <span className="font-semibold text-ink">{currentModelMeta.shortName}</span>
             </button>
 
             <button
               id="toggle-theme-btn"
               onClick={() => setTheme((prev) => (prev === 'light' ? 'dark' : 'light'))}
-              className="p-1.5 text-ink-muted hover:text-ink border border-rule hover:border-ink/40 rounded-md transition flex items-center justify-center cursor-pointer"
+              className="p-2 text-ink-muted hover:text-ink border border-rule hover:border-ink/40 rounded-lg transition flex items-center justify-center cursor-pointer"
               title={theme === 'light' ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro'}
             >
               {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
             </button>
 
-            <span className="w-px h-5 bg-rule mx-1" />
-
             <button
               id="open-receipt-modal-btn"
               onClick={() => setIsReceiptModalOpen(true)}
-              className="p-1.5 sm:px-2.5 sm:py-1.5 text-xs font-medium text-ink hover:text-gain border border-rule hover:border-gain/50 rounded-md transition flex items-center gap-1.5 cursor-pointer"
+              className="p-2 sm:px-3 sm:py-2 text-xs font-medium text-accent bg-accent-soft hover:bg-accent/20 rounded-lg transition items-center gap-1.5 cursor-pointer hidden sm:flex"
               title="Escanear ticket o recibo con IA"
             >
               <Camera className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline"><span className="hidden md:inline">Escanear</span> Recibo</span>
+              <span className="hidden lg:inline">Escanear</span> Recibo
+            </button>
+            <button
+              id="open-receipt-modal-btn-mobile"
+              onClick={() => setIsReceiptModalOpen(true)}
+              className="p-2 text-accent bg-accent-soft hover:bg-accent/20 rounded-lg transition flex items-center justify-center cursor-pointer sm:hidden"
+              title="Escanear ticket o recibo con IA"
+            >
+              <Camera className="w-4 h-4" />
             </button>
 
             <button
               id="open-verbal-modal-btn"
               onClick={() => setIsVerbalModalOpen(true)}
-              className="p-1.5 sm:px-2.5 sm:py-1.5 text-xs font-medium text-ink hover:text-gain border border-rule hover:border-gain/50 rounded-md transition flex items-center gap-1.5 cursor-pointer"
+              className="p-2 text-accent bg-accent-soft hover:bg-accent/20 rounded-lg transition flex items-center justify-center cursor-pointer"
               title="Dictar o escribir gasto en lenguaje natural"
             >
-              <Mic className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline"><span className="hidden md:inline">Gasto</span> Verbal</span>
+              <Mic className="w-4 h-4" />
             </button>
 
             <button
               id="open-add-modal-btn"
               onClick={() => setIsAddModalOpen(true)}
-              className="p-1.5 sm:px-2.5 sm:py-1.5 text-xs font-medium text-ink hover:text-ink border border-rule hover:border-ink/40 rounded-md transition flex items-center gap-1.5 cursor-pointer"
+              className="p-2 text-accent bg-accent-soft hover:bg-accent/20 rounded-lg transition flex items-center justify-center cursor-pointer"
               title="Agregar gasto manual"
             >
-              <Plus className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Manual</span>
+              <Plus className="w-4 h-4" />
             </button>
 
             <button
@@ -523,261 +654,158 @@ export default function App() {
                 setAdvisorInitialPrompt(undefined);
                 setIsAdvisorChatOpen(true);
               }}
-              className="px-3 py-1.5 text-xs font-semibold text-paper bg-ink hover:bg-ink/85 rounded-md transition flex items-center gap-1.5 cursor-pointer"
+              className="px-3 py-2 text-xs font-semibold text-white bg-accent hover:bg-accent/90 rounded-lg transition flex items-center gap-1.5 cursor-pointer"
             >
-              <MessageSquare className="w-3.5 h-3.5 text-insight" />
-              <span>Asesor IA</span>
+              <MessageSquare className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Asesor IA</span>
             </button>
           </div>
-        </div>
-      </header>
+        </header>
 
-      {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* Statement Summary Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 divide-y divide-x-0 md:divide-y-0 md:divide-x divide-rule border border-rule rounded-md overflow-hidden print:hidden">
-          {/* Total Spent — the hero figure of the statement */}
-          <div className="p-4">
-            <span className="text-xs text-ink-muted block">Gasto acumulado</span>
-            <div className="font-display text-3xl text-ink mt-1">
-              ${totalSpent.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+        <main className="flex-1 px-4 sm:px-6 py-6 space-y-6 max-w-[1400px] w-full mx-auto">
+          {/* Stat Cards Row */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 print:hidden">
+            {/* Total Spent — the hero figure */}
+            <div className="bg-surface rounded-2xl p-4 sm:p-5 flex items-center gap-3 sm:gap-4 shadow-sm">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-accent text-white flex items-center justify-center shrink-0">
+                <Wallet className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-lg sm:text-xl font-bold text-ink truncate">
+                  ${totalSpent.toLocaleString('es-MX', { minimumFractionDigits: 0 })}
+                </div>
+                <div className="text-xs text-ink-muted">Gasto acumulado</div>
+              </div>
             </div>
-            <div className="text-xs text-ink-muted mt-1 font-mono">
-              presupuesto ${totalBudget.toLocaleString('es-MX')}
-            </div>
-          </div>
 
-          {/* Budget Consumption */}
-          <div className="p-4">
-            <span className="text-xs text-ink-muted block">% del presupuesto</span>
-            <div className="flex items-baseline gap-2 mt-1">
-              <span
-                className={`font-display text-2xl ${
-                  (totalSpent / totalBudget) > 1 ? 'text-loss' : 'text-ink'
-                }`}
-              >
-                {((totalSpent / totalBudget) * 100).toFixed(1)}%
-              </span>
-            </div>
-            <div className="w-full h-1 bg-rule mt-2.5 overflow-hidden">
+            {/* Budget Consumption */}
+            <div className="bg-surface rounded-2xl p-4 sm:p-5 flex items-center gap-3 sm:gap-4 shadow-sm">
               <div
-                className={`h-full ${
-                  (totalSpent / totalBudget) > 1 ? 'bg-loss' : 'bg-gain'
-                }`}
-                style={{ width: `${Math.min((totalSpent / totalBudget) * 100, 100)}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Statistical Anomalies Detected */}
-          <div className="p-4">
-            <span className="text-xs text-ink-muted block flex items-center justify-between">
-              <span>Anomalías (&gt;{anomalyThreshold.toFixed(1)}σ)</span>
-              <AlertTriangle className="w-3.5 h-3.5 text-loss" />
-            </span>
-            <div className="font-display text-2xl text-loss mt-1">
-              {detectedAnomalies.length}
-            </div>
-            <p className="text-xs text-ink-muted mt-1">
-              puntaje Z &gt; 2.0 respecto a la media
-            </p>
-          </div>
-
-          {/* Comparison vs Previous Month */}
-          <div className="p-4">
-            <span className="text-xs text-ink-muted block">vs. mes anterior</span>
-            <div className="flex items-baseline gap-1.5 mt-1">
-              <span
-                className={`font-display text-2xl ${
-                  totalSpent > totalPreviousSpent ? 'text-loss' : 'text-gain'
+                className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl text-white flex items-center justify-center shrink-0 ${
+                  budgetIsOver ? 'bg-loss' : 'bg-accent'
                 }`}
               >
-                {totalSpent > totalPreviousSpent ? '+' : ''}
-                {totalPreviousSpent > 0
-                  ? (((totalSpent - totalPreviousSpent) / totalPreviousSpent) * 100).toFixed(1)
-                  : 0}
-                %
-              </span>
+                <PieChartIcon className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <div className={`text-lg sm:text-xl font-bold truncate ${budgetIsOver ? 'text-loss' : 'text-ink'}`}>
+                  {((totalSpent / totalBudget) * 100).toFixed(1)}%
+                </div>
+                <div className="text-xs text-ink-muted">del presupuesto</div>
+              </div>
             </div>
-            <p className="text-xs text-ink-muted mt-1">
-              {totalSpent > totalPreviousSpent ? 'incremento en el periodo' : 'contención favorable de gasto'}
-            </p>
+
+            {/* Statistical Anomalies Detected */}
+            <div className="bg-surface rounded-2xl p-4 sm:p-5 flex items-center gap-3 sm:gap-4 shadow-sm">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-loss text-white flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-lg sm:text-xl font-bold text-loss truncate">{detectedAnomalies.length}</div>
+                <div className="text-xs text-ink-muted">Anomalías (&gt;{anomalyThreshold.toFixed(1)}σ)</div>
+              </div>
+            </div>
+
+            {/* Comparison vs Previous Month */}
+            <div className="bg-surface rounded-2xl p-4 sm:p-5 flex items-center gap-3 sm:gap-4 shadow-sm">
+              <div
+                className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl text-white flex items-center justify-center shrink-0 ${
+                  spentIsHigherThanPrevious ? 'bg-loss' : 'bg-gain'
+                }`}
+              >
+                <ArrowUpRight className={`w-5 h-5 ${spentIsHigherThanPrevious ? '' : 'rotate-90'}`} />
+              </div>
+              <div className="min-w-0">
+                <div className={`text-lg sm:text-xl font-bold truncate ${spentIsHigherThanPrevious ? 'text-loss' : 'text-gain'}`}>
+                  {spentIsHigherThanPrevious ? '+' : ''}
+                  {totalPreviousSpent > 0
+                    ? (((totalSpent - totalPreviousSpent) / totalPreviousSpent) * 100).toFixed(1)
+                    : 0}
+                  %
+                </div>
+                <div className="text-xs text-ink-muted">vs. mes anterior</div>
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* Tab Navigation Controls */}
-        <div className="flex items-center justify-between border-b border-rule transition-colors duration-200 relative print:hidden">
-          <nav className="flex items-center gap-4 sm:gap-6 overflow-x-auto">
-            <button
-              id="tab-executive-btn"
-              type="button"
-              onClick={() => setActiveTab('executive')}
-              className={`pb-2.5 -mb-px text-xs sm:text-sm font-medium transition flex items-center gap-2 whitespace-nowrap cursor-pointer border-b-2 ${
-                activeTab === 'executive'
-                  ? 'text-ink border-ink'
-                  : 'text-ink-muted border-transparent hover:text-ink'
-              }`}
-            >
-              <BarChart3 className="w-4 h-4" />
-              <span>Análisis ejecutivo & behavioral</span>
-            </button>
+          {/* Tab View Render */}
+          <div className="transition-all duration-200">
+            {activeTab === 'executive' && (
+              <ExecutiveAnalysisView
+                analysis={analysisResult}
+                categoryStats={categoryStats}
+                totalSpent={totalSpent}
+                totalBudget={totalBudget}
+                isLoading={isAnalyzing}
+                selectedModel={selectedModel}
+                onRefreshAnalysis={() => runDeepAnalysis()}
+                onOpenAdvisorChat={(topic) => {
+                  setAdvisorInitialPrompt(topic);
+                  setIsAdvisorChatOpen(true);
+                }}
+                onOpenModelSelector={() => setIsModelSelectorOpen(true)}
+              />
+            )}
 
-            <button
-              id="tab-anomalies-btn"
-              type="button"
-              onClick={() => setActiveTab('anomalies')}
-              className={`pb-2.5 -mb-px text-xs sm:text-sm font-medium transition flex items-center gap-2 whitespace-nowrap cursor-pointer border-b-2 ${
-                activeTab === 'anomalies'
-                  ? 'text-ink border-ink'
-                  : 'text-ink-muted border-transparent hover:text-ink'
-              }`}
-            >
-              <AlertTriangle className="w-4 h-4 text-loss" />
-              <span>Detector de anomalías (&gt;2σ)</span>
-              {detectedAnomalies.length > 0 && (
-                <span className="text-[10px] font-semibold px-1.5 rounded-sm bg-loss/10 text-loss">
-                  {detectedAnomalies.length}
-                </span>
-              )}
-            </button>
+            {activeTab === 'anomalies' && (
+              <AnomalyDetectorView
+                anomalies={detectedAnomalies}
+                allTransactions={enrichedTransactions}
+                categoryStats={categoryStats}
+                currentThreshold={anomalyThreshold}
+                onThresholdChange={setAnomalyThreshold}
+              />
+            )}
 
-            <button
-              id="tab-patterns-btn"
-              type="button"
-              onClick={() => setActiveTab('patterns')}
-              className={`pb-2.5 -mb-px text-xs sm:text-sm font-medium transition flex items-center gap-2 whitespace-nowrap cursor-pointer border-b-2 ${
-                activeTab === 'patterns'
-                  ? 'text-ink border-ink'
-                  : 'text-ink-muted border-transparent hover:text-ink'
-              }`}
-            >
-              <TrendingUp className="w-4 h-4 text-insight" />
-              <span>Visualizaciones & patrones</span>
-            </button>
+            {activeTab === 'patterns' && (
+              <PatternsAndChartsView
+                transactions={enrichedTransactions}
+                categoryStats={categoryStats}
+                anomalies={detectedAnomalies}
+              />
+            )}
 
-            <button
-              id="tab-goals-btn"
-              type="button"
-              onClick={() => setActiveTab('goals')}
-              className={`pb-2.5 -mb-px text-xs sm:text-sm font-medium transition flex items-center gap-2 whitespace-nowrap cursor-pointer border-b-2 ${
-                activeTab === 'goals'
-                  ? 'text-ink border-ink'
-                  : 'text-ink-muted border-transparent hover:text-ink'
-              }`}
-            >
-              <Target className="w-4 h-4 text-gain" />
-              <span>Metas de ahorro ({savingsGoals.length})</span>
-            </button>
+            {activeTab === 'goals' && (
+              <SavingsGoalsView
+                goals={savingsGoals}
+                transactions={enrichedTransactions}
+                categoryStats={categoryStats}
+                anomalies={detectedAnomalies}
+                selectedModel={selectedModel}
+                onAddGoal={handleAddGoal}
+                onUpdateGoal={handleUpdateGoal}
+                onDeleteGoal={handleDeleteGoal}
+                onAddContribution={handleAddContribution}
+              />
+            )}
 
-            <button
-              id="tab-transactions-btn"
-              type="button"
-              onClick={() => setActiveTab('transactions')}
-              className={`pb-2.5 -mb-px text-xs sm:text-sm font-medium transition flex items-center gap-2 whitespace-nowrap cursor-pointer border-b-2 ${
-                activeTab === 'transactions'
-                  ? 'text-ink border-ink'
-                  : 'text-ink-muted border-transparent hover:text-ink'
-              }`}
-            >
-              <ListOrdered className="w-4 h-4" />
-              <span>Transacciones ({enrichedTransactions.length})</span>
-            </button>
-          </nav>
-
-          {/* Scroll hint: this row can overflow on narrow screens with all 5 tabs.
-              Positioned at right-0 since the "Datos demo" button next to it is
-              itself hidden below sm (only visible where nav no longer overflows). */}
-          <div className="sm:hidden pointer-events-none absolute right-0 top-0 bottom-2.5 w-8 bg-gradient-to-l from-paper to-transparent" />
-
-          <button
-            id="reset-demo-data-btn"
-            type="button"
-            onClick={handleResetDemoData}
-            className="hidden sm:flex items-center gap-1.5 text-xs text-ink-muted hover:text-ink pb-2.5 transition cursor-pointer"
-            title="Restablecer datos de ejemplo con anomalías estadísticas"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Datos demo</span>
-          </button>
-        </div>
-
-        {/* Tab View Render */}
-        <div className="transition-all duration-200">
-          {activeTab === 'executive' && (
-            <ExecutiveAnalysisView
-              analysis={analysisResult}
-              categoryStats={categoryStats}
-              totalSpent={totalSpent}
-              totalBudget={totalBudget}
-              isLoading={isAnalyzing}
-              selectedModel={selectedModel}
-              onRefreshAnalysis={() => runDeepAnalysis()}
-              onOpenAdvisorChat={(topic) => {
-                setAdvisorInitialPrompt(topic);
-                setIsAdvisorChatOpen(true);
-              }}
-              onOpenModelSelector={() => setIsModelSelectorOpen(true)}
-            />
-          )}
-
-          {activeTab === 'anomalies' && (
-            <AnomalyDetectorView
-              anomalies={detectedAnomalies}
-              allTransactions={enrichedTransactions}
-              categoryStats={categoryStats}
-              currentThreshold={anomalyThreshold}
-              onThresholdChange={setAnomalyThreshold}
-            />
-          )}
-
-          {activeTab === 'patterns' && (
-            <PatternsAndChartsView
-              transactions={enrichedTransactions}
-              categoryStats={categoryStats}
-              anomalies={detectedAnomalies}
-            />
-          )}
-
-          {activeTab === 'goals' && (
-            <SavingsGoalsView
-              goals={savingsGoals}
-              transactions={enrichedTransactions}
-              categoryStats={categoryStats}
-              anomalies={detectedAnomalies}
-              selectedModel={selectedModel}
-              onAddGoal={handleAddGoal}
-              onUpdateGoal={handleUpdateGoal}
-              onDeleteGoal={handleDeleteGoal}
-              onAddContribution={handleAddContribution}
-            />
-          )}
-
-          {activeTab === 'transactions' && (
-            <TransactionListView
-              transactions={enrichedTransactions}
-              onDeleteTransaction={handleDeleteTransaction}
-            />
-          )}
-        </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="mt-auto border-t border-rule bg-paper py-4 text-center text-xs text-ink-muted transition-colors duration-200 print:hidden">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>Agente de Análisis Financiero Personal & Behavioral Economics</span>
-          <div className="flex items-center gap-2">
-            <span>Motor activo: <strong className="text-ink font-semibold">{currentModelMeta.name}</strong></span>
-            <span className="text-rule">·</span>
-            <span>Detección Z-Score (&gt;2σ)</span>
-            <button
-              onClick={() => setIsModelSelectorOpen(true)}
-              className="text-ink hover:text-ink/70 underline ml-1 cursor-pointer font-medium"
-            >
-              Cambiar modelo
-            </button>
+            {activeTab === 'transactions' && (
+              <TransactionListView
+                transactions={enrichedTransactions}
+                onDeleteTransaction={handleDeleteTransaction}
+              />
+            )}
           </div>
-        </div>
-      </footer>
+        </main>
+
+        {/* Footer */}
+        <footer className="border-t border-rule bg-paper py-4 text-center text-xs text-ink-muted transition-colors duration-200 print:hidden">
+          <div className="max-w-[1400px] mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <span>Agente de Análisis Financiero Personal & Behavioral Economics</span>
+            <div className="flex items-center gap-2">
+              <span>Motor activo: <strong className="text-ink font-semibold">{currentModelMeta.name}</strong></span>
+              <span className="text-rule">·</span>
+              <span>Detección Z-Score (&gt;2σ)</span>
+              <button
+                onClick={() => setIsModelSelectorOpen(true)}
+                className="text-accent hover:text-accent/80 underline ml-1 cursor-pointer font-medium"
+              >
+                Cambiar modelo
+              </button>
+            </div>
+          </div>
+        </footer>
+      </div>
 
       {/* Modals */}
       <ReceiptScannerModal

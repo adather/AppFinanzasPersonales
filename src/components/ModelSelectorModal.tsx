@@ -33,14 +33,14 @@ export const ModelSelectorModal: React.FC<ModelSelectorModalProps> = ({
   const getModelIcon = (id: GeminiModelId) => {
     switch (id) {
       case 'gemini-3.1-pro-preview':
-        return <Brain className="w-4 h-4 text-ink-muted" />;
+        return <Brain className="w-4 h-4" />;
       case 'gemini-3.1-flash-lite':
-        return <Zap className="w-4 h-4 text-ink-muted" />;
+        return <Zap className="w-4 h-4" />;
       case 'gemini-flash-latest':
-        return <Cpu className="w-4 h-4 text-ink-muted" />;
+        return <Cpu className="w-4 h-4" />;
       case 'gemini-3.8-flash':
       default:
-        return <Sparkles className="w-4 h-4 text-ink-muted" />;
+        return <Sparkles className="w-4 h-4" />;
     }
   };
 
@@ -52,17 +52,17 @@ export const ModelSelectorModal: React.FC<ModelSelectorModalProps> = ({
     >
       <div
         id="model-selector-modal"
-        className="bg-paper w-full max-w-xl rounded-lg border border-rule overflow-hidden flex flex-col max-h-[90vh] transition-colors"
+        className="bg-surface w-full max-w-xl rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh] transition-colors"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="px-6 py-4 border-b border-rule flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-md border border-rule text-ink flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-accent text-white flex items-center justify-center shrink-0">
               <Cpu className="w-4.5 h-4.5" />
             </div>
             <div>
-              <h3 className="font-display text-lg text-ink leading-tight">
+              <h3 className="font-bold text-lg text-ink leading-tight">
                 Selección de modelo de inteligencia artificial
               </h3>
               <p className="text-xs text-ink-muted">
@@ -74,7 +74,7 @@ export const ModelSelectorModal: React.FC<ModelSelectorModalProps> = ({
             id="close-model-selector-btn"
             type="button"
             onClick={onClose}
-            className="p-1.5 text-ink-muted hover:text-ink hover:bg-surface rounded-md transition"
+            className="p-1.5 text-ink-muted hover:text-ink hover:bg-rule/50 rounded-lg transition"
           >
             <X className="w-4 h-4" />
           </button>
@@ -82,8 +82,8 @@ export const ModelSelectorModal: React.FC<ModelSelectorModalProps> = ({
 
         {/* Content & Model Options */}
         <div className="p-6 overflow-y-auto space-y-4">
-          <div className="p-3.5 border border-rule flex items-start gap-3">
-            <Info className="w-4 h-4 text-ink-muted shrink-0 mt-0.5" />
+          <div className="p-3.5 bg-accent-soft rounded-lg flex items-start gap-3">
+            <Info className="w-4 h-4 text-accent shrink-0 mt-0.5" />
             <p className="text-xs text-ink-muted leading-relaxed">
               Todos los modelos se ejecutan en el servidor de forma segura con el SDK oficial de{' '}
               <strong className="text-ink font-semibold">google-genai</strong> (Python). Puedes alternar libremente según tus prioridades de velocidad o exhaustividad analítica.
@@ -98,25 +98,25 @@ export const ModelSelectorModal: React.FC<ModelSelectorModalProps> = ({
                   key={model.id}
                   id={`model-card-${model.id}`}
                   onClick={() => onSelectModel(model.id)}
-                  className={`p-4 border transition-all cursor-pointer relative flex flex-col gap-2 ${
+                  className={`p-4 rounded-xl transition-all cursor-pointer relative flex flex-col gap-2 ${
                     isSelected
-                      ? 'border-ink bg-surface'
-                      : 'border-rule hover:border-ink/40'
+                      ? 'ring-2 ring-accent bg-accent-soft'
+                      : 'bg-surface shadow-sm hover:shadow-md'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-md border border-rule bg-paper shrink-0">
+                      <div className="p-2 rounded-lg bg-accent-soft text-accent shrink-0">
                         {getModelIcon(model.id)}
                       </div>
                       <div>
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-sm font-semibold text-ink">{model.name}</span>
                           <span
-                            className={`px-1.5 py-0.5 text-[10px] border rounded-sm ${
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
                               model.isDefault
-                                ? 'text-insight border-insight/30'
-                                : 'text-ink-muted border-rule'
+                                ? 'bg-insight/15 text-insight'
+                                : 'bg-rule/60 text-ink-muted'
                             }`}
                           >
                             {model.badge}
@@ -128,11 +128,11 @@ export const ModelSelectorModal: React.FC<ModelSelectorModalProps> = ({
 
                     <div className="shrink-0 mt-1">
                       {isSelected ? (
-                        <div className="w-5 h-5 rounded-full bg-ink text-paper flex items-center justify-center">
+                        <div className="w-5 h-5 rounded-full bg-accent text-white flex items-center justify-center">
                           <CheckCircle2 className="w-3.5 h-3.5" />
                         </div>
                       ) : (
-                        <div className="w-5 h-5 rounded-full border border-rule" />
+                        <div className="w-5 h-5 rounded-full border-2 border-rule" />
                       )}
                     </div>
                   </div>
@@ -163,7 +163,7 @@ export const ModelSelectorModal: React.FC<ModelSelectorModalProps> = ({
                   onReanalyzeWithModel(selectedModel);
                   onClose();
                 }}
-                className="flex-1 sm:flex-none px-3.5 py-2 text-xs font-medium border border-rule text-ink-muted hover:text-ink rounded-md transition cursor-pointer"
+                className="flex-1 sm:flex-none px-3.5 py-2 text-xs font-medium bg-rule/50 hover:bg-rule text-ink-muted hover:text-ink rounded-lg transition cursor-pointer"
               >
                 Guardar y reanalizar
               </button>
@@ -172,7 +172,7 @@ export const ModelSelectorModal: React.FC<ModelSelectorModalProps> = ({
               id="confirm-model-selection-btn"
               type="button"
               onClick={onClose}
-              className="flex-1 sm:flex-none px-4 py-2 text-xs font-semibold bg-ink text-paper hover:bg-ink/85 rounded-md transition flex items-center justify-center gap-1.5 cursor-pointer"
+              className="flex-1 sm:flex-none px-4 py-2 text-xs font-semibold bg-accent text-white hover:bg-accent/90 rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <span>Aplicar configuración</span>
               <ArrowRight className="w-3.5 h-3.5" />

@@ -149,16 +149,18 @@ export const SavingsGoalsView: React.FC<SavingsGoalsViewProps> = ({
     }
   };
 
+  const progressBadgeColor = globalProgress >= 100 ? 'bg-gain' : 'bg-accent';
+
   return (
-    <div id="savings-goals-container" className="space-y-10 text-ink">
+    <div id="savings-goals-container" className="space-y-6 text-ink">
       {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-rule">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1.5 text-xs text-ink-muted">
             <Target className="w-3.5 h-3.5 text-gain" />
             Proyectos de ahorro con seguimiento estadístico
           </div>
-          <h2 className="font-display text-2xl text-ink tracking-tight">Metas de ahorro concretas</h2>
+          <h2 className="font-bold text-xl text-ink tracking-tight">Metas de ahorro concretas</h2>
           <p className="text-xs text-ink-muted mt-0.5 max-w-2xl leading-relaxed">
             Define tus proyectos prioritarios (casa, fondo de emergencia, vacaciones) y calcula
             el ahorro periódico requerido con consejos conductuales basados en tus hábitos de gasto reales.
@@ -171,7 +173,7 @@ export const SavingsGoalsView: React.FC<SavingsGoalsViewProps> = ({
             setEditingGoal(null);
             setIsAddModalOpen(true);
           }}
-          className="px-4 py-2 text-xs font-semibold text-paper bg-ink hover:bg-ink/85 rounded-md transition flex items-center gap-2 shrink-0 cursor-pointer"
+          className="px-4 py-2 text-xs font-semibold text-white bg-accent hover:bg-accent/90 rounded-lg transition flex items-center gap-2 shrink-0 cursor-pointer shadow-sm"
         >
           <Plus className="w-4 h-4" />
           <span>Definir nueva meta</span>
@@ -179,64 +181,79 @@ export const SavingsGoalsView: React.FC<SavingsGoalsViewProps> = ({
       </div>
 
       {/* Global KPI Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 divide-y divide-x-0 md:divide-y-0 md:divide-x divide-rule border border-rule rounded-md overflow-hidden">
-        <div className="p-4">
-          <span className="text-xs text-ink-muted block">Ahorro acumulado total</span>
-          <div className="font-display text-2xl text-ink mt-1">
-            ${totalCurrent.toLocaleString('es-MX')}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-surface rounded-2xl p-4 sm:p-5 flex items-center gap-3 sm:gap-4 shadow-sm">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-accent text-white flex items-center justify-center shrink-0">
+            <DollarSign className="w-5 h-5" />
           </div>
-          <div className="text-xs text-ink-muted mt-1 font-mono">
-            de ${totalTarget.toLocaleString('es-MX')} en objetivos
-          </div>
-        </div>
-
-        <div className="p-4">
-          <span className="text-xs text-ink-muted block">Progreso global</span>
-          <div className="font-display text-2xl text-ink mt-1">{globalProgress}%</div>
-          <div className="w-full h-1 bg-rule mt-2.5 overflow-hidden">
-            <div
-              className="bg-gain h-full transition-all duration-500"
-              style={{ width: `${Math.min(100, globalProgress)}%` }}
-            />
+          <div className="min-w-0">
+            <div className="text-lg sm:text-xl font-bold text-ink truncate">
+              ${totalCurrent.toLocaleString('es-MX')}
+            </div>
+            <div className="text-xs text-ink-muted truncate">
+              de ${totalTarget.toLocaleString('es-MX')} en objetivos
+            </div>
           </div>
         </div>
 
-        <div className="p-4">
-          <span className="text-xs text-ink-muted block">Compromiso mensual total</span>
-          <div className="font-display text-2xl text-ink mt-1">
-            ${totalMonthlyRequired.toLocaleString('es-MX')}
-            <span className="text-xs font-sans text-ink-muted"> / mes</span>
+        <div className="bg-surface rounded-2xl p-4 sm:p-5 flex items-center gap-3 sm:gap-4 shadow-sm">
+          <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl text-white flex items-center justify-center shrink-0 ${progressBadgeColor}`}>
+            <TrendingUp className="w-5 h-5" />
           </div>
-          <p className="text-xs text-ink-muted mt-1">Para cumplir todas en tiempo</p>
+          <div className="min-w-0 flex-1">
+            <div className="text-lg sm:text-xl font-bold text-ink truncate">{globalProgress}%</div>
+            <div className="w-full h-1.5 bg-rule rounded-full mt-1.5 overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${progressBadgeColor}`}
+                style={{ width: `${Math.min(100, globalProgress)}%` }}
+              />
+            </div>
+          </div>
         </div>
 
-        <div className="p-4">
-          <span className="text-xs text-ink-muted flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-insight" />
-            Margen de optimización
-          </span>
-          <div className="font-display text-2xl text-insight mt-1">
-            +${(behavioral.microExpensesTotal + 1200).toLocaleString('es-MX')}
-            <span className="text-xs font-sans text-ink-muted"> / mes</span>
+        <div className="bg-surface rounded-2xl p-4 sm:p-5 flex items-center gap-3 sm:gap-4 shadow-sm">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-accent text-white flex items-center justify-center shrink-0">
+            <Calendar className="w-5 h-5" />
           </div>
-          <p className="text-xs text-ink-muted mt-1">Identificado en hábitos conductuales</p>
+          <div className="min-w-0">
+            <div className="text-base sm:text-xl font-bold text-ink truncate">
+              ${totalMonthlyRequired.toLocaleString('es-MX')}
+              <span className="text-xs font-sans font-normal text-ink-muted"> /mes</span>
+            </div>
+            <div className="text-xs text-ink-muted truncate">Para cumplir todas en tiempo</div>
+          </div>
+        </div>
+
+        <div className="bg-surface rounded-2xl p-4 sm:p-5 flex items-center gap-3 sm:gap-4 shadow-sm">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-insight text-white flex items-center justify-center shrink-0">
+            <Sparkles className="w-5 h-5" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-base sm:text-xl font-bold text-insight truncate">
+              +${(behavioral.microExpensesTotal + 1200).toLocaleString('es-MX')}
+              <span className="text-xs font-sans font-normal text-ink-muted"> /mes</span>
+            </div>
+            <div className="text-xs text-ink-muted truncate">Margen de optimización IA</div>
+          </div>
         </div>
       </div>
 
       {/* Behavioral Economics Savings Bridge / Insights Banner */}
-      <div className="p-6 bg-ink text-paper space-y-3">
+      <div className="rounded-2xl shadow-sm p-6 space-y-3 bg-accent text-white">
         <div className="flex items-start gap-3">
-          <Lightbulb className="w-5 h-5 text-insight shrink-0 mt-0.5" />
+          <div className="w-9 h-9 rounded-xl bg-white/15 text-white flex items-center justify-center shrink-0">
+            <Lightbulb className="w-4.5 h-4.5" />
+          </div>
           <div>
-            <span className="text-xs text-paper/60">Economía conductual aplicada a tus metas</span>
-            <h3 className="font-display text-lg text-paper mt-0.5">
+            <span className="text-xs text-white/70">Economía conductual aplicada a tus metas</span>
+            <h3 className="font-bold text-lg text-white mt-0.5">
               ¿Cómo fondear tus ${totalMonthlyRequired.toLocaleString('es-MX')}/mes sin privaciones?
             </h3>
-            <p className="text-xs text-paper/75 mt-1.5 max-w-3xl leading-relaxed">
-              Tus datos muestran <strong className="text-paper">${behavioral.microExpensesTotal.toLocaleString('es-MX')}</strong> en microgastos (&lt;$150)
-              y un incremento del <strong className="text-paper">{behavioral.fridaySpikePct}%</strong> en restaurantes los viernes. Si aplicas
+            <p className="text-xs text-white/85 mt-1.5 max-w-3xl leading-relaxed">
+              Tus datos muestran <strong className="text-white">${behavioral.microExpensesTotal.toLocaleString('es-MX')}</strong> en microgastos (&lt;$150)
+              y un incremento del <strong className="text-white">{behavioral.fridaySpikePct}%</strong> en restaurantes los viernes. Si aplicas
               la regla de pre-compromiso (transferir el ahorro antes del viernes), cubres de inmediato el{' '}
-              <strong className="text-insight">
+              <strong className="text-white underline decoration-white/40">
                 {totalMonthlyRequired > 0
                   ? Math.min(100, Math.round(((behavioral.microExpensesTotal + 1200) / totalMonthlyRequired) * 100))
                   : 0}
@@ -250,12 +267,12 @@ export const SavingsGoalsView: React.FC<SavingsGoalsViewProps> = ({
 
       {/* Goals Grid */}
       {goals.length === 0 ? (
-        <div className="p-12 text-center border border-dashed border-rule space-y-4">
-          <div className="w-14 h-14 border border-rule text-ink-muted mx-auto flex items-center justify-center">
+        <div className="bg-surface rounded-2xl shadow-sm p-12 text-center space-y-4">
+          <div className="w-14 h-14 rounded-full bg-accent-soft text-accent mx-auto flex items-center justify-center">
             <Target className="w-7 h-7" />
           </div>
           <div>
-            <h3 className="font-display text-base text-ink">Aún no has definido metas de ahorro</h3>
+            <h3 className="font-bold text-base text-ink">Aún no has definido metas de ahorro</h3>
             <p className="text-xs text-ink-muted max-w-md mx-auto mt-1">
               Comienza estableciendo una meta como un Fondo de Emergencia, el Pago Inicial de una Casa o tus próximas Vacaciones.
             </p>
@@ -263,16 +280,16 @@ export const SavingsGoalsView: React.FC<SavingsGoalsViewProps> = ({
           <button
             type="button"
             onClick={() => setIsAddModalOpen(true)}
-            className="px-5 py-2.5 bg-ink text-paper hover:bg-ink/85 rounded-md text-xs font-semibold inline-flex items-center gap-2 cursor-pointer"
+            className="px-5 py-2.5 bg-accent text-white hover:bg-accent/90 rounded-lg text-xs font-semibold inline-flex items-center gap-2 cursor-pointer shadow-sm"
           >
             <Plus className="w-4 h-4" />
             <span>Crear primera meta</span>
           </button>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div className="flex items-center justify-between flex-wrap gap-2">
-            <h3 className="font-display text-lg text-ink">Metas activas ({goals.length})</h3>
+            <h3 className="font-bold text-base text-ink">Metas activas ({goals.length})</h3>
             <span className="text-xs text-ink-muted">
               Haz clic en cada meta para ver el desglose de cuotas y consejos personalizados
             </span>
@@ -288,33 +305,33 @@ export const SavingsGoalsView: React.FC<SavingsGoalsViewProps> = ({
                 <div
                   key={goal.id}
                   id={`goal-card-${goal.id}`}
-                  className="border border-rule transition hover:border-ink/30"
+                  className="bg-surface rounded-2xl shadow-sm"
                 >
                   {/* Top Bar of the Card */}
-                  <div className="p-6 space-y-5">
+                  <div className="p-5 sm:p-6 space-y-5">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div className="flex items-start gap-3.5">
                         <div
-                          className="w-12 h-12 text-white flex items-center justify-center shrink-0 mt-0.5"
+                          className="w-12 h-12 rounded-xl text-white flex items-center justify-center shrink-0"
                           style={{ backgroundColor: goal.color || '#10B981' }}
                         >
                           <CategoryIcon className="w-6 h-6" />
                         </div>
                         <div>
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-xs text-ink-muted">{goal.category}</span>
+                            <span className="text-xs text-ink-muted capitalize">{goal.category}</span>
                             {calc.isCompleted ? (
-                              <span className="text-xs text-gain flex items-center gap-1">
+                              <span className="text-xs font-medium px-2 py-1 rounded-full bg-gain/10 text-gain flex items-center gap-1">
                                 <CheckCircle2 className="w-3.5 h-3.5" /> Meta alcanzada
                               </span>
                             ) : (
-                              <span className="text-xs text-ink-muted flex items-center gap-1">
+                              <span className="text-xs font-medium px-2 py-1 rounded-full bg-rule/60 text-ink-muted flex items-center gap-1">
                                 <Clock className="w-3.5 h-3.5" /> {calc.monthsRemaining} meses restantes
                               </span>
                             )}
                           </div>
 
-                          <h4 className="font-display text-lg text-ink mt-0.5">{goal.title}</h4>
+                          <h4 className="font-bold text-lg text-ink mt-0.5">{goal.title}</h4>
                           {goal.notes && (
                             <p className="text-xs text-ink-muted mt-0.5 max-w-xl line-clamp-1">
                               {goal.notes}
@@ -328,7 +345,7 @@ export const SavingsGoalsView: React.FC<SavingsGoalsViewProps> = ({
                         <button
                           type="button"
                           onClick={() => setContributeGoal(goal)}
-                          className="px-3.5 py-2 text-xs font-semibold text-paper bg-ink hover:bg-ink/85 rounded-md transition flex items-center gap-1.5 cursor-pointer"
+                          className="px-3.5 py-2 text-xs font-semibold text-white bg-accent hover:bg-accent/90 rounded-lg transition flex items-center gap-1.5 cursor-pointer shadow-sm"
                         >
                           <Plus className="w-4 h-4" />
                           <span>Abonar ahorro</span>
@@ -340,7 +357,7 @@ export const SavingsGoalsView: React.FC<SavingsGoalsViewProps> = ({
                             setEditingGoal(goal);
                             setIsAddModalOpen(true);
                           }}
-                          className="p-2 text-ink-muted hover:text-ink border border-rule hover:border-ink/40 rounded-md transition cursor-pointer"
+                          className="p-2 text-ink-muted hover:text-ink hover:bg-rule/60 rounded-lg transition cursor-pointer"
                           title="Editar meta"
                         >
                           <Edit3 className="w-4 h-4" />
@@ -353,7 +370,7 @@ export const SavingsGoalsView: React.FC<SavingsGoalsViewProps> = ({
                               onDeleteGoal(goal.id);
                             }
                           }}
-                          className="p-2 text-ink-muted hover:text-loss border border-rule hover:border-loss/40 rounded-md transition cursor-pointer"
+                          className="p-2 text-ink-muted hover:text-loss hover:bg-loss/10 rounded-lg transition cursor-pointer"
                           title="Eliminar meta"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -365,7 +382,7 @@ export const SavingsGoalsView: React.FC<SavingsGoalsViewProps> = ({
                     <div className="space-y-2">
                       <div className="flex items-baseline justify-between text-xs">
                         <div className="flex items-baseline gap-2">
-                          <span className="font-display text-xl text-ink">
+                          <span className="font-bold text-xl text-ink">
                             ${goal.currentAmount.toLocaleString('es-MX')}
                           </span>
                           <span className="text-ink-muted font-mono">
@@ -377,9 +394,9 @@ export const SavingsGoalsView: React.FC<SavingsGoalsViewProps> = ({
                         </div>
                       </div>
 
-                      <div className="w-full bg-rule h-1.5 overflow-hidden">
+                      <div className="w-full bg-rule h-1.5 rounded-full overflow-hidden">
                         <div
-                          className="h-full transition-all duration-700"
+                          className="h-full rounded-full transition-all duration-700"
                           style={{
                             backgroundColor: goal.color || '#10B981',
                             width: `${Math.min(100, calc.percentComplete)}%`,
@@ -435,7 +452,7 @@ export const SavingsGoalsView: React.FC<SavingsGoalsViewProps> = ({
                   </div>
 
                   {/* Expand / Collapse Behavioral Advice & History Toggle */}
-                  <div className="border-t border-rule px-6 py-3 flex items-center justify-between flex-wrap gap-2">
+                  <div className="border-t border-rule px-5 sm:px-6 py-3 flex items-center justify-between flex-wrap gap-2">
                     <button
                       type="button"
                       onClick={() => setExpandedGoalId(isExpanded ? null : goal.id)}
@@ -455,12 +472,14 @@ export const SavingsGoalsView: React.FC<SavingsGoalsViewProps> = ({
 
                   {/* Expanded Section: Behavioral Advice & Contribution History */}
                   {isExpanded && (
-                    <div className="p-6 border-t border-rule space-y-6">
+                    <div className="p-5 sm:p-6 border-t border-rule space-y-6">
                       {/* Personalized Behavioral Advice Section */}
                       <div className="space-y-3">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                           <div className="flex items-center gap-2">
-                            <Sparkles className="w-4 h-4 text-insight" />
+                            <div className="w-6 h-6 rounded-lg bg-insight/15 text-insight flex items-center justify-center shrink-0">
+                              <Sparkles className="w-3.5 h-3.5" />
+                            </div>
                             <h5 className="text-xs text-ink-muted">
                               Consejos personalizados basados en tus patrones de gasto
                             </h5>
@@ -470,9 +489,9 @@ export const SavingsGoalsView: React.FC<SavingsGoalsViewProps> = ({
                             type="button"
                             onClick={() => handleRequestAiAdvice(goal)}
                             disabled={loadingAdviceGoalId === goal.id}
-                            className="px-3 py-1.5 border border-rule text-ink-muted hover:text-ink hover:border-ink/40 rounded-md text-xs font-medium flex items-center gap-1.5 transition disabled:opacity-50 cursor-pointer"
+                            className="px-3 py-1.5 bg-accent-soft text-accent hover:bg-accent/20 rounded-lg text-xs font-medium flex items-center gap-1.5 transition disabled:opacity-50 cursor-pointer"
                           >
-                            <Sparkles className={`w-3.5 h-3.5 text-insight ${loadingAdviceGoalId === goal.id ? 'animate-spin' : ''}`} />
+                            <Sparkles className={`w-3.5 h-3.5 ${loadingAdviceGoalId === goal.id ? 'animate-spin' : ''}`} />
                             <span>
                               {loadingAdviceGoalId === goal.id ? 'Analizando con Gemini...' : 'Regenerar consejos IA'}
                             </span>
@@ -485,10 +504,15 @@ export const SavingsGoalsView: React.FC<SavingsGoalsViewProps> = ({
                             goal.customAdvice.map((adv) => (
                               <div
                                 key={adv.id}
-                                className="p-5 border border-rule space-y-2.5 text-xs"
+                                className="rounded-xl bg-insight/5 p-4 space-y-2.5 text-xs"
                               >
-                                <div className="flex items-center justify-between gap-2 flex-wrap">
-                                  <span className="text-ink font-medium">{adv.focusCategory}</span>
+                                <div className="flex items-start justify-between gap-2 flex-wrap">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-7 h-7 rounded-lg bg-insight/15 text-insight flex items-center justify-center shrink-0">
+                                      <Lightbulb className="w-3.5 h-3.5" />
+                                    </div>
+                                    <span className="text-ink font-medium">{adv.focusCategory}</span>
+                                  </div>
                                   <span className="text-gain font-mono">
                                     +${adv.monthlySavingPotential.toLocaleString('es-MX')}/mes
                                   </span>
@@ -497,7 +521,7 @@ export const SavingsGoalsView: React.FC<SavingsGoalsViewProps> = ({
                                 <p className="text-ink leading-relaxed">{adv.tip}</p>
 
                                 <div className="flex items-center justify-between pt-2.5 border-t border-rule text-xs">
-                                  <span className="text-insight">{adv.behavioralBias}</span>
+                                  <span className="px-2 py-0.5 rounded-full bg-insight/10 text-insight">{adv.behavioralBias}</span>
                                   {adv.impactWeeksAccelerated && (
                                     <span className="text-ink-muted">
                                       Adelanta la meta {adv.impactWeeksAccelerated} semanas
@@ -507,7 +531,7 @@ export const SavingsGoalsView: React.FC<SavingsGoalsViewProps> = ({
                               </div>
                             ))
                           ) : (
-                            <div className="col-span-2 p-5 border border-dashed border-rule text-center space-y-2.5">
+                            <div className="md:col-span-2 rounded-xl bg-insight/5 text-center p-5 space-y-2.5">
                               <p className="text-xs text-ink-muted">
                                 Genera consejos conductuales con IA diseñados específicamente para cruzar tus transacciones
                                 y financiar esta meta sin fricción.
@@ -515,9 +539,9 @@ export const SavingsGoalsView: React.FC<SavingsGoalsViewProps> = ({
                               <button
                                 type="button"
                                 onClick={() => handleRequestAiAdvice(goal)}
-                                className="px-4 py-2 bg-ink text-paper hover:bg-ink/85 rounded-md text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer"
+                                className="px-4 py-2 bg-accent text-white hover:bg-accent/90 rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer shadow-sm"
                               >
-                                <Sparkles className="w-3.5 h-3.5 text-insight" />
+                                <Sparkles className="w-3.5 h-3.5" />
                                 Generar consejos personalizados con IA
                               </button>
                             </div>
@@ -537,21 +561,23 @@ export const SavingsGoalsView: React.FC<SavingsGoalsViewProps> = ({
                           <button
                             type="button"
                             onClick={() => setContributeGoal(goal)}
-                            className="text-xs text-ink-muted hover:text-ink font-medium transition cursor-pointer"
+                            className="text-xs text-accent hover:text-accent/80 font-medium transition cursor-pointer"
                           >
                             + Agregar abono
                           </button>
                         </div>
 
                         {goal.contributions && goal.contributions.length > 0 ? (
-                          <div className="border border-rule divide-y divide-rule">
+                          <div className="divide-y divide-rule">
                             {goal.contributions.slice(-5).reverse().map((contrib) => (
                               <div
                                 key={contrib.id}
-                                className="px-4 py-2.5 flex items-center justify-between text-xs"
+                                className="py-2.5 flex items-center justify-between text-xs"
                               >
                                 <div className="flex items-center gap-2.5">
-                                  <Check className="w-3.5 h-3.5 text-gain shrink-0" />
+                                  <span className="w-6 h-6 rounded-full bg-gain/10 text-gain flex items-center justify-center shrink-0">
+                                    <Check className="w-3.5 h-3.5" />
+                                  </span>
                                   <div>
                                     <span className="text-ink">
                                       {contrib.note || 'Abono programado'}
@@ -568,7 +594,7 @@ export const SavingsGoalsView: React.FC<SavingsGoalsViewProps> = ({
                             ))}
                           </div>
                         ) : (
-                          <div className="p-3 border border-rule text-ink-muted text-xs text-center">
+                          <div className="bg-paper rounded-xl p-3 text-ink-muted text-xs text-center">
                             No hay abonos registrados aún. Haz clic en "Abonar ahorro" para iniciar.
                           </div>
                         )}
