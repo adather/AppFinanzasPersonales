@@ -95,6 +95,34 @@ Aplicación full-stack de finanzas personales y economía conductual (*behaviora
 
 ---
 
+## 🐳 Docker
+
+La imagen se construye en dos etapas: Node compila el frontend (`vite build`) y una imagen Python liviana (`python:3.12-slim` + `uv`) sirve la API y el build estático desde un único proceso `uvicorn` en el puerto 3000.
+
+1. **Construir la imagen:**
+   ```bash
+   docker build -t agente-financiero .
+   ```
+
+2. **Ejecutarla localmente** (pasando la API key como variable de entorno, nunca dentro de la imagen):
+   ```bash
+   docker run -d --name agente-financiero -p 3000:3000 \
+     -e GEMINI_API_KEY="tu_api_key_de_gemini_aqui" \
+     agente-financiero
+   ```
+   Verifica que esté arriba con `curl http://localhost:3000/api/health`.
+
+3. **Publicar en un registro** (Docker Hub, GHCR, ECR, etc.) cuando estés listo:
+   ```bash
+   docker tag agente-financiero <tu-registro>/agente-financiero:<tag>
+   docker push <tu-registro>/agente-financiero:<tag>
+   ```
+   Ajusta `<tu-registro>` y `<tag>` a donde vayas a alojarlo (por ejemplo `docker.io/tuusuario/agente-financiero:latest` o `ghcr.io/tuusuario/agente-financiero:latest`); antes de hacer push necesitas `docker login` en ese registro.
+
+La imagen incluye un `HEALTHCHECK` sobre `/api/health` y no contiene `node_modules` ni el entorno virtual del build (ver `.dockerignore`) — el runtime final solo lleva el código de `server/`, el build de `dist/` y las dependencias Python resueltas por `uv`.
+
+---
+
 ## 📄 Licencia
 
 Distribuido bajo la Licencia MIT.
