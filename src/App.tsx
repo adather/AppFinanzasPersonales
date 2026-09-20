@@ -19,17 +19,18 @@ import {
   Cpu,
   LayoutDashboard,
 } from 'lucide-react';
-import { Transaction, CategoryName, FinancialAnalysisResult, AnomalyItem, CategoryStat, SavingsGoal, GeminiModelId, AVAILABLE_GEMINI_MODELS } from './types';
+import { Transaction, FinancialAnalysisResult, SavingsGoal, GeminiModelId, BehavioralPatterns, AVAILABLE_GEMINI_MODELS } from './types';
 import { getInitialTransactions } from './data/initialTransactions';
 import { getInitialSavingsGoals } from './data/initialGoals';
-import {
-  calculateCategoryStats,
-  detectAnomalies,
-  DEFAULT_BUDGETS,
-  calculateMean,
-  calculateStdDev,
-  calculateZScore,
-} from './utils/statistics';
+import { fetchAnalyticsSummary, AnalyticsSummary } from './api/analytics';
+
+const EMPTY_BEHAVIORAL_PATTERNS: BehavioralPatterns = {
+  dayOfWeekSummary: [],
+  fridaySpikePct: 0,
+  microExpensesCount: 0,
+  microExpensesTotal: 0,
+  weekendPct: 0,
+};
 import { ExecutiveAnalysisView } from './components/ExecutiveAnalysisView';
 import { AnomalyDetectorView } from './components/AnomalyDetectorView';
 import { PatternsAndChartsView } from './components/PatternsAndChartsView';
@@ -156,8 +157,12 @@ export default function App() {
     return getInitialSavingsGoals();
   });
 
-  // Threshold multiplier for statistical anomaly detection (default = 2.0 std dev)
-  const [anomalyThreshold, setAnomalyThreshold] = useState<number>(2.0);
+  // Threshold multiplier for statistical anomaly detection (modified z-score, robust to outliers)
+  const [anomalyThreshold, setAnomalyThreshold] = useState<number>(3.5);
+
+  // All statistics (category stats, anomalies, timeline, behavioral patterns)
+  // are computed server-side — see server/analytics.py and src/api/analytics.ts.
+  const [analyticsSummary, setAnalyticsSummary] = useState<AnalyticsSummary | null>(null);
 
   // Active view tab
   type ActiveTab = 'executive' | 'anomalies' | 'patterns' | 'goals' | 'transactions';
@@ -228,30 +233,30 @@ export default function App() {
     }
   }, [selectedModel]);
 
-  // Compute category stats
-  const categoryStats = useMemo(() => {
-    return calculateCategoryStats(currentTransactions, previousTransactions, DEFAULT_BUDGETS);
-  }, [currentTransactions, previousTransactions]);
+  // Fetch all statistics from the backend whenever the inputs that affect
+  // them change (new/edited transactions, or the anomaly sensitivity slider).
+  useEffect(() => {
+    let cancelled = false;
+    fetchAnalyticsSummary(currentTransactions, previousTransactions, anomalyThreshold)
+      .then((summary) => {
+        if (!cancelled) setAnalyticsSummary(summary);
+      })
+      .catch((err) => {
+        console.error('Failed to compute analytics summary:', err);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [currentTransactions, previousTransactions, anomalyThreshold]);
 
-  // Compute anomalies using statistical Z-Score > anomalyThreshold
-  const detectedAnomalies = useMemo(() => {
-    return detectAnomalies(currentTransactions, anomalyThreshold);
-  }, [currentTransactions, anomalyThreshold]);
-
-  // Decorate current transactions with anomaly tags and exact Z-scores
-  const enrichedTransactions = useMemo(() => {
-    const anomalyMap = new Map<string, AnomalyItem>();
-    detectedAnomalies.forEach((a) => anomalyMap.set(a.id, a));
-
-    return currentTransactions.map((t) => {
-      const anom = anomalyMap.get(t.id);
-      return {
-        ...t,
-        isAnomaly: Boolean(anom),
-        zScore: anom ? anom.zScore : undefined,
-      };
-    });
-  }, [currentTransactions, detectedAnomalies]);
+  const categoryStats = analyticsSummary?.categoryStats ?? [];
+  const detectedAnomalies = analyticsSummary?.anomalies ?? [];
+  const timeline = analyticsSummary?.timeline ?? [];
+  const spendingRanges = analyticsSummary?.spendingRanges ?? [];
+  const behavioralPatterns = analyticsSummary?.behavioralPatterns ?? EMPTY_BEHAVIORAL_PATTERNS;
+  // Current transactions decorated with isAnomaly/zScore; falls back to the
+  // plain list for the brief window before the first fetch resolves.
+  const enrichedTransactions = analyticsSummary?.enrichedTransactions ?? currentTransactions;
 
   // Financial totals
   const totalSpent = useMemo(() => {
@@ -262,9 +267,8 @@ export default function App() {
     return previousTransactions.reduce((sum, t) => sum + t.amount, 0);
   }, [previousTransactions]);
 
-  const totalBudget = useMemo(() => {
-    return Object.values(DEFAULT_BUDGETS).reduce((sum, b) => sum + b, 0);
-  }, []);
+  const totalBudget = analyticsSummary?.totalBudget ?? 0;
+  const budgetPercentage = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
 
   // Last-14-days daily spend, for the sparkline behind the hero stat
   const last14DaysSpend = useMemo(() => {
@@ -302,8 +306,8 @@ export default function App() {
         categoria: a.transaction.category,
         fecha: a.transaction.date,
         zScore: a.zScore,
-        categoryMean: a.categoryMean,
-        categoryStdDev: a.categoryStdDev,
+        categoryMedian: a.categoryMedian,
+        categoryMAD: a.categoryMAD,
         threshold: a.threshold,
         note: a.transaction.note,
       }));
@@ -358,7 +362,7 @@ export default function App() {
           modelUsed: modelToUse,
           resumenEjecutivo: [
             `El gasto total del mes alcanza $${totalSpent.toLocaleString()} representando el ${((totalSpent / totalBudget) * 100).toFixed(1)}% del presupuesto global.`,
-            `Se han identificado ${detectedAnomalies.length} gastos que superan 2 desviaciones estándar sobre su media histórica.`,
+            `Se han identificado ${detectedAnomalies.length} gastos con un patrón claramente atípico frente a su categoría (puntaje Z robusto > ${anomalyThreshold.toFixed(1)}).`,
             `La categoría con mayor sobregiro relativo es Restaurantes & Cafeterías con marcada concentración los viernes (+38%).`,
             `Comparado con el mes previo, el gasto total tuvo una variación de ${totalSpent > totalPreviousSpent ? '+' : ''}${(((totalSpent - totalPreviousSpent) / totalPreviousSpent) * 100).toFixed(1)}%.`,
           ],
@@ -388,7 +392,7 @@ export default function App() {
               titulo: 'Fricción en Compras de Moda y Tecnología',
               sesgoAbordado: 'Gratificación Instantánea & Descuento Hiperbólico',
               accionConcreta: 'Aplica la regla de enfriamiento de 48 horas antes de cualquier compra no esencial mayor a $1,000.',
-              contextoEstadistico: 'Las 2 mayores compras impulsivas representaron un desvío de +2.8σ del promedio.',
+              contextoEstadistico: 'Las 2 mayores compras impulsivas representaron un puntaje Z robusto de +2.8 sobre la mediana de la categoría.',
             },
             {
               titulo: 'Contabilidad Mental para Microgastos de Cafetería',
@@ -417,12 +421,15 @@ export default function App() {
     }
   }, [totalSpent, totalBudget, currentTransactions, detectedAnomalies, totalPreviousSpent, categoryStats, analysisResult]);
 
-  // Run on mount if no analysis exists
+  // Run once real stats are in (avoids sending Gemini an empty/stale
+  // snapshot from before the first analytics fetch resolves); also covers
+  // the reset-demo-data flow, which just nulls analysisResult and lets this
+  // fire again once the fresh summary lands.
   useEffect(() => {
-    if (!analysisResult) {
+    if (!analysisResult && analyticsSummary) {
       runDeepAnalysis();
     }
-  }, []);
+  }, [analyticsSummary]);
 
   // Handlers for adding transactions
   const handleAddTransaction = (newTx: Omit<Transaction, 'id'>) => {
@@ -484,10 +491,10 @@ export default function App() {
       setSavingsGoals(getInitialSavingsGoals());
       localStorage.removeItem(STORAGE_KEY_ANALYSIS);
       localStorage.removeItem(STORAGE_KEY_GOALS);
+      // Nulling this lets the analyticsSummary-driven effect above re-run
+      // the analysis once the fresh (post-reset) stats land — no need to
+      // guess a delay for the backend round trip.
       setAnalysisResult(null);
-      setTimeout(() => {
-        runDeepAnalysis();
-      }, 100);
     }
   };
 
@@ -513,7 +520,7 @@ export default function App() {
     {
       id: 'anomalies',
       label: 'Anomalías',
-      subtitle: 'Gastos que superan el umbral estadístico (>2σ)',
+      subtitle: 'Gastos que superan el umbral estadístico (Z robusto)',
       icon: AlertTriangle,
       badge: detectedAnomalies.length,
     },
@@ -533,7 +540,7 @@ export default function App() {
     },
   ];
   const activeNavItem = navItems.find((item) => item.id === activeTab) || navItems[0];
-  const budgetIsOver = totalSpent / totalBudget > 1;
+  const budgetIsOver = totalBudget > 0 && totalSpent > totalBudget;
   const spentIsHigherThanPrevious = totalSpent > totalPreviousSpent;
 
   return (
@@ -729,24 +736,24 @@ export default function App() {
             <div className="p-5">
               <div className="text-xs text-ink-muted">% del presupuesto</div>
               <div className={`text-2xl font-bold mt-1 ${budgetIsOver ? 'text-loss' : 'text-ink'}`}>
-                {((totalSpent / totalBudget) * 100).toFixed(1)}%
+                {budgetPercentage.toFixed(1)}%
               </div>
               <div className="w-full h-1.5 rounded-full bg-rule mt-2 overflow-hidden">
                 <div
                   className={`h-full rounded-full ${budgetIsOver ? 'bg-loss' : 'bg-accent'}`}
-                  style={{ width: `${Math.min((totalSpent / totalBudget) * 100, 100)}%` }}
+                  style={{ width: `${Math.min(budgetPercentage, 100)}%` }}
                 />
               </div>
             </div>
 
             {/* Statistical Anomalies Detected */}
             <div className="p-5">
-              <div className="text-xs text-ink-muted">Anomalías (&gt;{anomalyThreshold.toFixed(1)}σ)</div>
+              <div className="text-xs text-ink-muted">Anomalías (Z&gt;{anomalyThreshold.toFixed(1)})</div>
               <div className="flex items-baseline gap-1.5 mt-1">
                 <AlertTriangle className="w-4 h-4 text-loss shrink-0" />
                 <span className="text-2xl font-bold text-loss">{detectedAnomalies.length}</span>
               </div>
-              <div className="text-xs text-ink-muted mt-1">puntaje Z &gt; 2.0 respecto a la media</div>
+              <div className="text-xs text-ink-muted mt-1">puntaje Z robusto sobre la mediana de la categoría</div>
             </div>
 
             {/* Comparison vs Previous Month */}
@@ -804,6 +811,9 @@ export default function App() {
                 transactions={enrichedTransactions}
                 categoryStats={categoryStats}
                 anomalies={detectedAnomalies}
+                behavioralPatterns={behavioralPatterns}
+                timeline={timeline}
+                spendingRanges={spendingRanges}
               />
             )}
 
@@ -813,6 +823,7 @@ export default function App() {
                 transactions={enrichedTransactions}
                 categoryStats={categoryStats}
                 anomalies={detectedAnomalies}
+                behavioralPatterns={behavioralPatterns}
                 selectedModel={selectedModel}
                 onAddGoal={handleAddGoal}
                 onUpdateGoal={handleUpdateGoal}
@@ -837,7 +848,7 @@ export default function App() {
             <div className="flex items-center gap-2">
               <span>Motor activo: <strong className="text-ink font-semibold">{currentModelMeta.name}</strong></span>
               <span className="text-rule">·</span>
-              <span>Detección Z-Score (&gt;2σ)</span>
+              <span>Detección Z-Score robusto (mediana/MAD)</span>
               <button
                 onClick={() => setIsModelSelectorOpen(true)}
                 className="text-accent hover:text-accent/80 underline ml-1 cursor-pointer font-medium"

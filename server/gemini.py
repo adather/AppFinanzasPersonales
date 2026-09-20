@@ -14,7 +14,12 @@ import random
 from functools import lru_cache
 from typing import Any, Awaitable, Callable, Optional
 
+from fastapi.responses import JSONResponse
 from google import genai
+
+# A hung upstream call would otherwise block the request (and this retry
+# loop) indefinitely — the SDK has no default timeout of its own.
+REQUEST_TIMEOUT_SECONDS = 30
 
 ALLOWED_MODELS = [
     "gemini-3.8-flash",
@@ -89,7 +94,8 @@ def is_transient_error(err: Exception) -> bool:
         "try again later",
     )
     return (
-        code in (503, 429)
+        isinstance(err, asyncio.TimeoutError)
+        or code in (503, 429)
         or status in transient_statuses
         or any(marker in message for marker in transient_markers)
     )
@@ -116,7 +122,7 @@ async def execute_with_retry_and_fallback(
 
         for attempt in range(1, max_attempts + 1):
             try:
-                result = await generate_fn(current_model)
+                result = await asyncio.wait_for(generate_fn(current_model), timeout=REQUEST_TIMEOUT_SECONDS)
                 if not is_primary:
                     print(f"[Gemini API] Fallback model '{current_model}' succeeded!")
                 return GeminiResult(result, current_model, not is_primary)
@@ -128,10 +134,70 @@ async def execute_with_retry_and_fallback(
                     f"(attempt {attempt}/{max_attempts}): {err}"
                 )
                 if not transient:
-                    break
+                    # A non-transient error (bad request, invalid argument,
+                    # content rejected) means the request itself is broken,
+                    # not that this particular model is unavailable — every
+                    # other model would fail the same way. Cascading to the
+                    # fallback candidates here would just add 1-2 more
+                    # doomed calls (and their latency) before the user sees
+                    # the same error anyway, so raise immediately instead.
+                    raise
                 if attempt < max_attempts:
                     delay = attempt * 1.2 + random.random() * 0.4
                     await asyncio.sleep(delay)
 
     assert last_error is not None
     raise last_error
+
+
+def ai_error_response(error: Exception, fallback_message: str) -> JSONResponse:
+    """Error envelope shared by every Gemini endpoint: 503 + a transient-
+    overload message when the failure looks temporary, 500 + the real error
+    otherwise."""
+    is_overload = is_transient_error(error)
+    return JSONResponse(
+        status_code=503 if is_overload else 500,
+        content={
+            "success": False,
+            "error": (
+                "El modelo de IA está experimentando alta demanda temporal."
+                if is_overload
+                else fallback_message
+            ),
+            "message": (
+                "Los servidores de IA están saturados temporalmente. Por favor "
+                "intenta de nuevo en unos momentos."
+                if is_overload
+                else (str(error) or "Error desconocido")
+            ),
+            "isTransient": is_overload,
+        },
+    )
+
+
+async def run_json_endpoint(
+    generate_fn: Callable[[str], Awaitable[Any]],
+    model_pref: str,
+    error_log_prefix: str,
+    error_fallback_message: str,
+) -> dict[str, Any] | JSONResponse:
+    """Shared shape behind every JSON-returning Gemini endpoint: call with
+    retry/fallback, parse the model's JSON, envelope the result.
+
+    Callers that need something outside this shape (parse_receipt's base64
+    decoding, chat_advisor's plain-text reply) build their own generate_fn
+    and handle the rest inline; this only dedupes the part that was
+    identical across every endpoint.
+    """
+    try:
+        result = await execute_with_retry_and_fallback(generate_fn, model_pref)
+        parsed = clean_and_parse_json(result.response.text)
+        return {
+            "success": True,
+            "modelUsed": result.model_used,
+            "fallbackUsed": result.fallback_used,
+            "data": parsed,
+        }
+    except Exception as error:  # noqa: BLE001
+        print(f"{error_log_prefix}: {error}")
+        return ai_error_response(error, error_fallback_message)

@@ -33,20 +33,16 @@ import {
   BarChart3,
   Sliders,
 } from 'lucide-react';
-import { CategoryStat, Transaction, AnomalyItem, CategoryName } from '../types';
-import {
-  analyzeBehavioralPatterns,
-  buildTimelineData,
-  buildSpendingRanges,
-  detectAnomalies,
-  CATEGORY_COLORS,
-  TimelinePoint,
-} from '../utils/statistics';
+import { CategoryStat, Transaction, AnomalyItem, CategoryName, BehavioralPatterns, SpendingRange, TimelinePoint } from '../types';
+import { CATEGORY_COLORS } from '../utils/categoryColors';
 
 interface PatternsAndChartsViewProps {
   transactions: Transaction[];
   categoryStats: CategoryStat[];
-  anomalies?: AnomalyItem[];
+  anomalies: AnomalyItem[];
+  behavioralPatterns: BehavioralPatterns;
+  timeline: TimelinePoint[];
+  spendingRanges: SpendingRange[];
   onSelectCategory?: (category: CategoryName) => void;
 }
 
@@ -98,6 +94,9 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
   transactions,
   categoryStats,
   anomalies,
+  behavioralPatterns,
+  timeline,
+  spendingRanges,
   onSelectCategory,
 }) => {
   // Timeline interactive filters
@@ -123,40 +122,27 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
     return () => clearTimeout(timer);
   }, []);
 
-  // Compute anomalies if not provided
-  const computedAnomalies = useMemo(() => {
-    return anomalies || detectAnomalies(transactions, 2.0);
-  }, [transactions, anomalies]);
-
-  const behavioral = useMemo(() => {
-    return analyzeBehavioralPatterns(transactions);
-  }, [transactions]);
+  // All statistical computation (behavioral patterns, timeline, anomalies)
+  // comes from the backend as props — see src/api/analytics.ts.
+  const behavioral = behavioralPatterns;
 
   // Quick-glance ring metrics for the dashboard header
   const totalBudget = useMemo(() => categoryStats.reduce((sum, c) => sum + c.budget, 0), [categoryStats]);
   const totalSpentAllCategories = useMemo(() => categoryStats.reduce((sum, c) => sum + c.total, 0), [categoryStats]);
   const budgetUsedPct = totalBudget > 0 ? (totalSpentAllCategories / totalBudget) * 100 : 0;
-  const anomalyRatePct = transactions.length > 0 ? (computedAnomalies.length / transactions.length) * 100 : 0;
-
-  // Timeline dataset
-  const fullTimeline = useMemo(() => {
-    return buildTimelineData(transactions, computedAnomalies);
-  }, [transactions, computedAnomalies]);
+  const anomalyRatePct = transactions.length > 0 ? (anomalies.length / transactions.length) * 100 : 0;
 
   const filteredTimeline = useMemo(() => {
-    let list = fullTimeline;
+    let list = timeline;
     if (timeRange === '14d') {
       list = list.slice(-14);
     } else if (timeRange === '7d') {
       list = list.slice(-7);
     }
     return list;
-  }, [fullTimeline, timeRange]);
+  }, [timeline, timeRange]);
 
-  // Spending tiers
-  const spendingTiers = useMemo(() => {
-    return buildSpendingRanges(transactions);
-  }, [transactions]);
+  const spendingTiers = spendingRanges;
 
   // Prepare data for Category Budget vs Spent chart
   const categoryBarData = useMemo(() => {
@@ -194,7 +180,7 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
     return transactions.reduce((sum, t) => sum + t.amount, 0);
   }, [transactions]);
 
-  // Custom dot for the timeline to highlight statistical anomalies (>2σ)
+  // Custom dot for the timeline to highlight statistical anomalies (Z robusto)
   const renderAnomalyDot = (props: any) => {
     const { cx, cy, payload } = props;
     if (!payload || !payload.hasAnomaly) {
@@ -253,10 +239,10 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
             </div>
             <div className="bg-surface rounded-xl p-3 text-center min-w-[120px]">
               <span className="text-xs text-ink-muted block">
-                Anomalías &gt;2σ
+                Anomalías (Z robusto)
               </span>
               <span className="font-bold text-lg text-loss font-mono">
-                {computedAnomalies.length}
+                {anomalies.length}
               </span>
               <span className="text-[10px] text-ink-muted block">en la serie temporal</span>
             </div>
@@ -287,7 +273,7 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
             percent={anomalyRatePct}
             color="var(--loss)"
             label="Transacciones atípicas"
-            sublabel={`${computedAnomalies.length} de ${transactions.length} movimientos`}
+            sublabel={`${anomalies.length} de ${transactions.length} movimientos`}
           />
         </div>
       </div>
@@ -366,7 +352,7 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
               }`}
             >
               <AlertTriangle className="w-3 h-3" />
-              Solo anomalías &gt;2σ
+              Solo anomalías (Z alto)
             </button>
           </div>
         </div>
@@ -376,7 +362,7 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-loss" />
-              <strong className="text-ink font-medium">Puntos rojos:</strong> anomalía estadística detectada (&gt;2σ)
+              <strong className="text-ink font-medium">Puntos rojos:</strong> anomalía estadística detectada (Z robusto)
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-3 h-0.5 rounded-full bg-accent" />
@@ -460,7 +446,7 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
                         <div className="p-2 bg-loss/10 rounded-lg space-y-1 mt-1">
                           <div className="flex items-center gap-1 font-medium text-loss text-[11px]">
                             <AlertTriangle className="w-3 h-3" />
-                            Anomalía ({data.anomalyZScore ? `+${data.anomalyZScore}σ` : '>2σ'})
+                            Anomalía ({data.anomalyZScore ? `Z ${data.anomalyZScore}` : 'Z alto'})
                           </div>
                           <div className="text-ink font-medium truncate">
                             {data.anomalyConcept}
@@ -570,7 +556,7 @@ export const PatternsAndChartsView: React.FC<PatternsAndChartsViewProps> = ({
                   </div>
                   {tx.isAnomaly && (
                     <div className="text-[10px] font-medium text-loss pt-0.5 flex items-center gap-1">
-                      <AlertTriangle className="w-3 h-3" /> Desvío &gt; 2σ (Z-Score alto)
+                      <AlertTriangle className="w-3 h-3" /> Desvío atípico (Z-Score robusto)
                     </div>
                   )}
                 </div>

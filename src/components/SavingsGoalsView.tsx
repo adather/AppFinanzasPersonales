@@ -26,8 +26,8 @@ import {
   Coffee,
   Check,
 } from 'lucide-react';
-import { SavingsGoal, Transaction, CategoryStat, AnomalyItem, GeminiModelId } from '../types';
-import { calculateGoalProgress, analyzeBehavioralPatterns } from '../utils/statistics';
+import { SavingsGoal, Transaction, CategoryStat, AnomalyItem, BehavioralPatterns, GeminiModelId } from '../types';
+import { calculateGoalProgress } from '../utils/goalMath';
 import { AddGoalModal } from './AddGoalModal';
 import { ContributeGoalModal } from './ContributeGoalModal';
 
@@ -36,6 +36,7 @@ interface SavingsGoalsViewProps {
   transactions: Transaction[];
   categoryStats: CategoryStat[];
   anomalies?: AnomalyItem[];
+  behavioralPatterns: BehavioralPatterns;
   selectedModel?: GeminiModelId;
   onAddGoal: (goal: Omit<SavingsGoal, 'id' | 'createdAt'>) => void;
   onUpdateGoal: (goal: SavingsGoal) => void;
@@ -48,6 +49,7 @@ export const SavingsGoalsView: React.FC<SavingsGoalsViewProps> = ({
   transactions,
   categoryStats,
   anomalies = [],
+  behavioralPatterns,
   selectedModel = 'gemini-3.8-flash',
   onAddGoal,
   onUpdateGoal,
@@ -60,8 +62,8 @@ export const SavingsGoalsView: React.FC<SavingsGoalsViewProps> = ({
   const [expandedGoalId, setExpandedGoalId] = useState<string | null>(goals[0]?.id || null);
   const [loadingAdviceGoalId, setLoadingAdviceGoalId] = useState<string | null>(null);
 
-  // Behavioral spending context
-  const behavioral = analyzeBehavioralPatterns(transactions);
+  // Behavioral spending context (computed server-side; see src/api/analytics.ts)
+  const behavioral = behavioralPatterns;
   const totalSpentMonth = transactions.reduce((acc, t) => acc + t.amount, 0);
 
   // Global totals

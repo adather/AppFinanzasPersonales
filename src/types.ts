@@ -35,6 +35,9 @@ export interface CategoryStat {
   count: number;
   mean: number;
   stdDev: number;
+  median: number;
+  mad: number; // median absolute deviation of log(amount+1); unitless, not a dollar figure
+  alertThreshold: number | null; // dollar amount that would flag as anomaly at the current sensitivity; null if too few transactions
   budget: number;
   budgetPercent: number;
   trend: '↑' | '↓' | '=';
@@ -45,12 +48,51 @@ export interface CategoryStat {
 export interface AnomalyItem {
   id: string;
   transaction: Transaction;
-  zScore: number;
-  categoryMean: number;
-  categoryStdDev: number;
+  zScore: number; // modified z-score (median/MAD, log-space) — robust to the outlier it's flagging
+  categoryMedian: number;
+  categoryMAD: number; // median absolute deviation of log(amount+1); unitless, not a dollar figure
   threshold: number;
   deviationMultiplier: number;
   explanation?: string;
+}
+
+export interface TimelinePoint {
+  date: string; // YYYY-MM-DD
+  displayDate: string; // e.g. "05 sep"
+  dailyTotal: number;
+  cumulativeTotal: number;
+  rollingAvg: number;
+  count: number;
+  hasAnomaly: boolean;
+  anomalyZScore?: number;
+  anomalyConcept?: string;
+  anomalyAmount?: number;
+  transactions: Transaction[];
+}
+
+export interface DayOfWeekSummary {
+  day: string;
+  count: number;
+  total: number;
+  avg: number;
+  isSpike?: boolean;
+}
+
+export interface BehavioralPatterns {
+  dayOfWeekSummary: DayOfWeekSummary[];
+  fridaySpikePct: number;
+  microExpensesCount: number;
+  microExpensesTotal: number;
+  weekendPct: number;
+}
+
+export interface SpendingRange {
+  label: string;
+  min: number;
+  max: number;
+  count: number;
+  total: number;
+  color: string;
 }
 
 export interface FinancialAnalysisResult {

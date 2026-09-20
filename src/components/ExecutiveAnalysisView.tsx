@@ -78,7 +78,7 @@ export const ExecutiveAnalysisView: React.FC<ExecutiveAnalysisViewProps> = ({
             Informe estadístico & conductual de gastos
           </h2>
           <p className="text-xs text-ink-muted mt-0.5">
-            Análisis de patrones cognitivos, desvíos estándar (&gt;2σ) y optimización de presupuesto
+            Análisis de patrones cognitivos, desvíos atípicos (Z robusto) y optimización de presupuesto
           </p>
         </div>
 
@@ -246,11 +246,11 @@ export const ExecutiveAnalysisView: React.FC<ExecutiveAnalysisViewProps> = ({
         </div>
       </section>
 
-      {/* 3. Top 3 Anomalías Detectadas con Explicación (>2 Desviaciones Estándar) */}
+      {/* 3. Top 3 Anomalías Detectadas con Explicación (Z-Score robusto, mediana/MAD) */}
       <section id="top-anomalias-section" className="space-y-3">
         <div className="flex items-baseline justify-between flex-wrap gap-1.5">
-          <h3 className="font-bold text-base text-ink">Anomalías estadísticas (&gt;2σ)</h3>
-          <span className="text-xs font-medium text-loss px-2.5 py-1 rounded-full bg-loss/10">z-score &gt; 2.0 desviaciones estándar</span>
+          <h3 className="font-bold text-base text-ink">Anomalías estadísticas (Z robusto)</h3>
+          <span className="text-xs font-medium text-loss px-2.5 py-1 rounded-full bg-loss/10">z-score robusto &gt; 3.5</span>
         </div>
 
         {analysis?.topAnomalias && analysis.topAnomalias.length > 0 ? (
@@ -260,7 +260,7 @@ export const ExecutiveAnalysisView: React.FC<ExecutiveAnalysisViewProps> = ({
                 <div className="flex items-start justify-between">
                   <span className="text-xs font-medium text-loss bg-loss/10 px-2 py-1 rounded-full flex items-center gap-1">
                     <AlertTriangle className="w-3.5 h-3.5" />
-                    +{anomaly.desviacionesEstandar || 2.5}σ
+                    Z {anomaly.desviacionesEstandar || 3.5}
                   </span>
                   <span className="text-xs text-ink-muted font-mono">{anomaly.fecha}</span>
                 </div>
@@ -406,7 +406,7 @@ export const ExecutiveAnalysisView: React.FC<ExecutiveAnalysisViewProps> = ({
           </div>
 
           <div className="pt-3 border-t border-white/15 text-[11px] opacity-70 flex items-center justify-between">
-            <span>metodología: Z-Score (&gt;2σ) + behavioral economics</span>
+            <span>metodología: Z-Score robusto (mediana/MAD) + behavioral economics</span>
             <span className="opacity-100 font-medium">{currentModelMeta.shortName}</span>
           </div>
         </motion.section>

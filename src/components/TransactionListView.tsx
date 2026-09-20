@@ -16,7 +16,7 @@ import {
   FileSpreadsheet,
 } from 'lucide-react';
 import { Transaction, CategoryName } from '../types';
-import { CATEGORY_COLORS } from '../utils/statistics';
+import { CATEGORY_COLORS } from '../utils/categoryColors';
 
 interface TransactionListViewProps {
   transactions: Transaction[];
@@ -87,7 +87,7 @@ export const TransactionListView: React.FC<TransactionListViewProps> = ({
       'Categoría',
       'Monto (MXN)',
       'Origen',
-      'Es Anomalía (>2σ)',
+      'Es Anomalía (Z robusto)',
       'Puntaje Z',
       'Notas',
     ];
@@ -177,7 +177,7 @@ export const TransactionListView: React.FC<TransactionListViewProps> = ({
               }`}
             >
               <AlertTriangle className="w-3.5 h-3.5" />
-              Solo anomalías &gt;2σ
+              Solo anomalías (Z alto)
             </button>
 
             {/* Sort direction */}
@@ -353,7 +353,7 @@ export const TransactionListView: React.FC<TransactionListViewProps> = ({
                     {tx.isAnomaly && (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-loss/10 font-mono text-loss">
                         <AlertTriangle className="w-3 h-3" />
-                        {tx.zScore ? `+${tx.zScore}σ` : '>2σ'}
+                        {tx.zScore ? `Z ${tx.zScore}` : 'Z alto'}
                       </span>
                     )}
                   </div>
@@ -437,10 +437,10 @@ export const TransactionListView: React.FC<TransactionListViewProps> = ({
                         {tx.isAnomaly ? (
                           <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-loss/10 text-loss font-mono">
                             <AlertTriangle className="w-3 h-3" />
-                            Anomalía ({tx.zScore ? `+${tx.zScore}σ` : '>2σ'})
+                            Anomalía ({tx.zScore ? `Z ${tx.zScore}` : 'Z alto'})
                           </span>
                         ) : (
-                          <span className="text-xs px-2 py-1 rounded-full bg-rule/60 text-ink-muted">Normal (dentro de 2σ)</span>
+                          <span className="text-xs px-2 py-1 rounded-full bg-rule/60 text-ink-muted">Normal (dentro de rango esperado)</span>
                         )}
                       </td>
                       <td className="py-3.5 px-4 text-center">

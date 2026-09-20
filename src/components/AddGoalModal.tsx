@@ -10,7 +10,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { SavingsGoal } from '../types';
-import { calculateGoalProgress } from '../utils/statistics';
+import { calculateGoalProgress } from '../utils/goalMath';
 
 interface AddGoalModalProps {
   isOpen: boolean;

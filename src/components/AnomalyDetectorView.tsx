@@ -47,8 +47,9 @@ export const AnomalyDetectorView: React.FC<AnomalyDetectorViewProps> = ({
               </h2>
               <p className="text-xs text-ink-muted mt-1 leading-relaxed">
                 Identifica gastos atípicos que se alejan significativamente del comportamiento habitual
-                utilizando el puntaje Z (Z-Score) y la regla empírica de{' '}
-                <strong className="text-ink font-medium">&gt; {currentThreshold.toFixed(1)} desviaciones estándar (σ)</strong>.
+                de cada categoría usando un <strong className="text-ink font-medium">puntaje Z robusto</strong> (basado
+                en mediana y MAD, no en promedio) con el criterio de{' '}
+                <strong className="text-ink font-medium">Z &gt; {currentThreshold.toFixed(1)}</strong>.
               </p>
             </div>
           </div>
@@ -61,11 +62,11 @@ export const AnomalyDetectorView: React.FC<AnomalyDetectorViewProps> = ({
                 Sensibilidad de anomalía
               </span>
               <span className="text-xs font-mono text-loss">
-                &gt; {currentThreshold.toFixed(1)}σ
+                Z &gt; {currentThreshold.toFixed(1)}
               </span>
             </div>
             <div className="flex items-center gap-1.5 flex-wrap">
-              {[1.5, 2.0, 2.5, 3.0].map((val) => (
+              {[2.5, 3.0, 3.5, 4.0].map((val) => (
                 <button
                   key={val}
                   type="button"
@@ -76,7 +77,7 @@ export const AnomalyDetectorView: React.FC<AnomalyDetectorViewProps> = ({
                       : 'bg-rule/50 text-ink-muted hover:text-ink'
                   }`}
                 >
-                  {val.toFixed(1)}σ {val === 2.0 ? '(estándar)' : ''}
+                  Z&gt;{val.toFixed(1)} {val === 3.5 ? '(estándar)' : ''}
                 </button>
               ))}
             </div>
@@ -87,21 +88,25 @@ export const AnomalyDetectorView: React.FC<AnomalyDetectorViewProps> = ({
       {/* Statistical formula note */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
         <div className="bg-surface rounded-2xl shadow-sm p-4">
-          <span className="text-ink-muted block mb-1.5">Fórmula Z-Score</span>
+          <span className="text-ink-muted block mb-1.5">Fórmula Z-Score robusto</span>
           <span className="text-ink font-mono text-xs block bg-accent-soft text-accent rounded-lg px-2 py-1.5 my-1.5">
-            Z = (Gasto - μ) / σ
+            Z = 0.6745 × (ln(Gasto+1) − mediana) / MAD
           </span>
           <p className="text-ink-muted leading-relaxed">
-            Donde <strong className="text-ink font-medium">μ</strong> es el promedio del gasto de la categoría y{' '}
-            <strong className="text-ink font-medium">σ</strong> es la desviación estándar muestral.
+            Se calcula en escala logarítmica porque el gasto es asimétrico (muchas compras chicas, pocas
+            grandes), y con <strong className="text-ink font-medium">mediana/MAD</strong> en vez de
+            promedio/desviación estándar para que un gasto extremo no distorsione su propio umbral de
+            comparación.
           </p>
         </div>
 
         <div className="bg-surface rounded-2xl shadow-sm p-4">
           <span className="text-ink-muted block mb-1.5">Criterio estadístico</span>
           <p className="text-ink-muted leading-relaxed">
-            En una distribución normal, solo el <strong className="text-ink font-medium">~2.27%</strong> de las
-            transacciones superan las +2 desviaciones estándar de manera ordinaria.
+            Se requieren al menos <strong className="text-ink font-medium">5 transacciones</strong> por
+            categoría para estimar una mediana/MAD confiable. El corte de{' '}
+            <strong className="text-ink font-medium">Z &gt; 3.5</strong> es la convención estándar (Iglewicz
+            &amp; Hoaglin) para este método robusto.
           </p>
         </div>
 
@@ -168,7 +173,7 @@ export const AnomalyDetectorView: React.FC<AnomalyDetectorViewProps> = ({
             </div>
             <p className="text-sm text-ink">No se encontraron anomalías con este filtro</p>
             <p className="text-xs text-ink-muted">
-              Todas las transacciones se encuentran dentro de las {currentThreshold} desviaciones estándar esperadas.
+              Todas las transacciones están dentro del rango esperado (Z ≤ {currentThreshold.toFixed(1)}).
             </p>
           </div>
         ) : (
@@ -178,7 +183,7 @@ export const AnomalyDetectorView: React.FC<AnomalyDetectorViewProps> = ({
                 <div className="flex items-start justify-between">
                   <span className="text-xs font-medium text-loss bg-loss/10 px-2 py-1 rounded-full flex items-center gap-1 font-mono">
                     <AlertTriangle className="w-3.5 h-3.5" />
-                    Z = +{anom.zScore}σ
+                    Z = +{anom.zScore}
                   </span>
                   <span className="text-xs text-ink-muted font-mono">{anom.transaction.date}</span>
                 </div>
@@ -198,15 +203,15 @@ export const AnomalyDetectorView: React.FC<AnomalyDetectorViewProps> = ({
                 {/* Mathematical context */}
                 <div className="grid grid-cols-3 gap-2 text-center text-xs py-3 border-y border-rule">
                   <div>
-                    <span className="text-ink-muted block font-mono">Media (μ)</span>
-                    <span className="text-ink font-mono">${anom.categoryMean}</span>
+                    <span className="text-ink-muted block font-mono">Mediana</span>
+                    <span className="text-ink font-mono">${anom.categoryMedian}</span>
                   </div>
                   <div>
-                    <span className="text-ink-muted block font-mono">Desv. est (σ)</span>
-                    <span className="text-ink font-mono">±${anom.categoryStdDev}</span>
+                    <span className="text-ink-muted block font-mono">MAD (ln)</span>
+                    <span className="text-ink font-mono">{anom.categoryMAD}</span>
                   </div>
                   <div>
-                    <span className="text-ink-muted block font-mono">Límite ({currentThreshold}σ)</span>
+                    <span className="text-ink-muted block font-mono">Límite (Z&gt;{currentThreshold.toFixed(1)})</span>
                     <span className="text-loss font-mono">${anom.threshold}</span>
                   </div>
                 </div>
@@ -230,7 +235,7 @@ export const AnomalyDetectorView: React.FC<AnomalyDetectorViewProps> = ({
       <section className="bg-surface rounded-2xl shadow-sm p-5 sm:p-6 space-y-3">
         <div className="flex items-baseline justify-between flex-wrap gap-1.5">
           <h3 className="font-bold text-lg text-ink">Parámetros estadísticos por categoría</h3>
-          <span className="text-xs text-ink-muted">media y desviación estándar muestral</span>
+          <span className="text-xs text-ink-muted">mediana y MAD (mismos parámetros usados para detectar anomalías)</span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm border-collapse">
@@ -239,14 +244,14 @@ export const AnomalyDetectorView: React.FC<AnomalyDetectorViewProps> = ({
                 <th className="py-2.5 pr-4 font-medium">Categoría</th>
                 <th className="py-2.5 px-4 text-right font-medium">Transacciones</th>
                 <th className="py-2.5 px-4 text-right font-medium">Total acumulado</th>
-                <th className="py-2.5 px-4 text-right font-medium">Media (μ)</th>
-                <th className="py-2.5 px-4 text-right font-medium">Desv. estándar (σ)</th>
-                <th className="py-2.5 pl-4 text-right font-medium">Umbral de alerta (μ + 2σ)</th>
+                <th className="py-2.5 px-4 text-right font-medium">Mediana</th>
+                <th className="py-2.5 px-4 text-right font-medium">MAD (ln)</th>
+                <th className="py-2.5 pl-4 text-right font-medium">Umbral de alerta (Z&gt;{currentThreshold.toFixed(1)})</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-rule">
               {categoryStats.map((stat) => {
-                const threshold = stat.mean + 2 * stat.stdDev;
+                const threshold = stat.alertThreshold;
                 return (
                   <tr key={stat.category}>
                     <td className="py-3 pr-4 font-medium text-ink flex items-center gap-2">
@@ -258,13 +263,15 @@ export const AnomalyDetectorView: React.FC<AnomalyDetectorViewProps> = ({
                       ${stat.total.toLocaleString('es-MX')}
                     </td>
                     <td className="py-3 px-4 text-right font-mono text-ink-muted">
-                      ${stat.mean.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                      ${stat.median.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
                     </td>
                     <td className="py-3 px-4 text-right font-mono text-ink-muted">
-                      ±${stat.stdDev.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                      {stat.mad.toLocaleString('es-MX', { minimumFractionDigits: 4 })}
                     </td>
                     <td className="py-3 pl-4 text-right font-mono text-loss">
-                      ${threshold.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                      {threshold === null
+                        ? <span className="text-ink-muted italic">Datos insuficientes</span>
+                        : `$${threshold.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`}
                     </td>
                   </tr>
                 );

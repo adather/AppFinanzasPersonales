@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, CheckCircle, TrendingDown } from 'lucide-react';
 import { SavingsGoal } from '../types';
-import { calculateGoalProgress } from '../utils/statistics';
+import { calculateGoalProgress } from '../utils/goalMath';
 
 interface ContributeGoalModalProps {
   isOpen: boolean;
