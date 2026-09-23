@@ -184,6 +184,14 @@ async def run_json_endpoint(
     """Shared shape behind every JSON-returning Gemini endpoint: call with
     retry/fallback, parse the model's JSON, envelope the result.
 
+    If the call used config.response_schema, Gemini's constrained decoding
+    already guarantees valid JSON matching that shape, and the SDK exposes
+    the validated Pydantic instance as response.parsed — preferred here over
+    re-parsing response.text by hand. Calls without a schema (still relying
+    on response_mime_type="application/json" alone) fall back to
+    clean_and_parse_json's best-effort recovery, which occasionally has to
+    patch up a model-generated formatting mistake.
+
     Callers that need something outside this shape (parse_receipt's base64
     decoding, chat_advisor's plain-text reply) build their own generate_fn
     and handle the rest inline; this only dedupes the part that was
@@ -191,7 +199,8 @@ async def run_json_endpoint(
     """
     try:
         result = await execute_with_retry_and_fallback(generate_fn, model_pref)
-        parsed = clean_and_parse_json(result.response.text)
+        response_parsed = getattr(result.response, "parsed", None)
+        parsed = response_parsed.model_dump() if response_parsed is not None else clean_and_parse_json(result.response.text)
         return {
             "success": True,
             "modelUsed": result.model_used,

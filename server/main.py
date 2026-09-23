@@ -20,6 +20,7 @@ from fastapi.staticfiles import StaticFiles
 from google.genai import types
 
 from server.analytics import AnalyticsSummaryRequest, build_analytics_summary
+from server.data_routes import router as data_router
 from server.gemini import (
     ALLOWED_MODELS,
     DEFAULT_MODEL,
@@ -46,6 +47,7 @@ from server.schemas import (
     ParseVerbalRequest,
     SavingsGoalAdviceRequest,
 )
+from server.schemas_ai import FinancialAnalysisSchema
 
 load_dotenv()
 
@@ -54,6 +56,7 @@ DIST_DIR = ROOT_DIR / "dist"
 DATA_URL_PREFIX_RE = re.compile(r"^data:[a-zA-Z0-9/+-]+;base64,")
 
 app = FastAPI(title="Agente de Análisis Financiero Personal")
+app.include_router(data_router)
 
 
 @app.get("/api/health")
@@ -156,6 +159,7 @@ async def analyze_finances(body: AnalyzeFinancesRequest) -> dict[str, Any]:
             contents=user_content,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
+                response_schema=FinancialAnalysisSchema,
                 system_instruction=analysis_system_prompt(),
             ),
         )

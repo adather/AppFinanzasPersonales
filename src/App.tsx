@@ -23,6 +23,18 @@ import { Transaction, FinancialAnalysisResult, SavingsGoal, GeminiModelId, Behav
 import { getInitialTransactions } from './data/initialTransactions';
 import { getInitialSavingsGoals } from './data/initialGoals';
 import { fetchAnalyticsSummary, AnalyticsSummary } from './api/analytics';
+import {
+  fetchAppState,
+  createTransaction,
+  deleteTransactionRemote,
+  createGoal,
+  updateGoalRemote,
+  deleteGoalRemote,
+  addContributionRemote,
+  saveAnalysisRemote,
+  saveSelectedModelRemote,
+  resetDataRemote,
+} from './api/appData';
 
 const EMPTY_BEHAVIORAL_PATTERNS: BehavioralPatterns = {
   dayOfWeekSummary: [],
@@ -69,30 +81,9 @@ const Sparkline: React.FC<{ data: number[]; color: string }> = ({ data, color })
 };
 
 export default function App() {
-  // Local storage keys
-  const STORAGE_KEY_CURRENT = 'app_finances_current_tx_v1';
-  const STORAGE_KEY_PREV = 'app_finances_prev_tx_v1';
-  const STORAGE_KEY_ANALYSIS = 'app_finances_ai_analysis_v1';
-  const STORAGE_KEY_GOALS = 'app_finances_savings_goals_v1';
-  const STORAGE_KEY_MODEL = 'app_finances_selected_model_v1';
-
-  // AI Model Selection state
-  const [selectedModel, setSelectedModel] = useState<GeminiModelId>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY_MODEL);
-      if (
-        saved &&
-        ['gemini-3.8-flash', 'gemini-3.1-flash-lite', 'gemini-flash-latest', 'gemini-3.1-pro-preview'].includes(
-          saved
-        )
-      ) {
-        return saved as GeminiModelId;
-      }
-    } catch (e) {
-      console.error(e);
-    }
-    return 'gemini-3.8-flash';
-  });
+  // AI Model Selection state (loaded from the backend along with everything
+  // else — see the loadAppData effect below)
+  const [selectedModel, setSelectedModel] = useState<GeminiModelId>('gemini-3.8-flash');
   const [isModelSelectorOpen, setIsModelSelectorOpen] = useState(false);
 
   // Global theme state: 'light' | 'dark'
@@ -125,37 +116,12 @@ export default function App() {
     return AVAILABLE_GEMINI_MODELS.find((m) => m.id === selectedModel) || AVAILABLE_GEMINI_MODELS[0];
   }, [selectedModel]);
 
-  // Initialize transactions
-  const [currentTransactions, setCurrentTransactions] = useState<Transaction[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY_CURRENT);
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return getInitialTransactions().current;
-  });
-
-  const [previousTransactions, setPreviousTransactions] = useState<Transaction[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY_PREV);
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return getInitialTransactions().previous;
-  });
-
-  // Initialize Savings Goals
-  const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY_GOALS);
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return getInitialSavingsGoals();
-  });
+  // Transactions and savings goals — loaded from the backend (see the
+  // loadAppData effect below); empty until that first fetch resolves.
+  const [currentTransactions, setCurrentTransactions] = useState<Transaction[]>([]);
+  const [previousTransactions, setPreviousTransactions] = useState<Transaction[]>([]);
+  const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>([]);
+  const [isLoadingAppData, setIsLoadingAppData] = useState(true);
 
   // Threshold multiplier for statistical anomaly detection (modified z-score, robust to outliers)
   const [anomalyThreshold, setAnomalyThreshold] = useState<number>(3.5);
@@ -178,64 +144,95 @@ export default function App() {
   const [isAdvisorChatOpen, setIsAdvisorChatOpen] = useState(false);
   const [advisorInitialPrompt, setAdvisorInitialPrompt] = useState<string | undefined>(undefined);
 
-  // Analysis result state
-  const [analysisResult, setAnalysisResult] = useState<FinancialAnalysisResult | null>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY_ANALYSIS);
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return null;
-  });
+  // Analysis result state — loaded from the backend, saved back to it after
+  // every successful (or fallback) run of runDeepAnalysis.
+  const [analysisResult, setAnalysisResult] = useState<FinancialAnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
 
-  // Save transactions to localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY_CURRENT, JSON.stringify(currentTransactions));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [currentTransactions]);
+  // Public demo mode (backend DEMO_MODE env var — see server/db.py): every
+  // visitor gets a 7-minute session, timed client-side from sessionStorage
+  // so a page refresh doesn't grant a fresh clock. The data itself is
+  // sandboxed server-side regardless — this timer is UX framing, not the
+  // security boundary.
+  const [isDemoMode, setIsDemoMode] = useState(false);
+  const [demoSecondsLeft, setDemoSecondsLeft] = useState<number | null>(null);
 
+  // Load everything from Firestore on mount. A brand-new (empty) account
+  // gets seeded with the demo dataset, same as the old localStorage
+  // first-run behavior; a fetch failure falls back to the demo dataset
+  // client-side so the app stays usable if the backend/Firestore is down.
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY_PREV, JSON.stringify(previousTransactions));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [previousTransactions]);
-
-  useEffect(() => {
-    if (analysisResult) {
+    let cancelled = false;
+    (async () => {
       try {
-        localStorage.setItem(STORAGE_KEY_ANALYSIS, JSON.stringify(analysisResult));
+        const state = await fetchAppState();
+        if (cancelled) return;
+
+        setIsDemoMode(state.demoMode);
+
+        const isBrandNew = state.currentTransactions.length === 0 && state.savingsGoals.length === 0;
+        if (isBrandNew) {
+          const initial = getInitialTransactions();
+          const initialGoals = getInitialSavingsGoals();
+          setCurrentTransactions(initial.current);
+          setPreviousTransactions(initial.previous);
+          setSavingsGoals(initialGoals);
+          resetDataRemote(initial.current, initial.previous, initialGoals).catch((err) =>
+            console.error('Failed to seed demo data on server:', err)
+          );
+        } else {
+          setCurrentTransactions(state.currentTransactions);
+          setPreviousTransactions(state.previousTransactions);
+          setSavingsGoals(state.savingsGoals);
+          setAnalysisResult(state.analysisResult);
+          if (state.selectedModel) setSelectedModel(state.selectedModel);
+        }
+      } catch (err) {
+        console.error('Failed to load app data from server, using local demo data:', err);
+        if (cancelled) return;
+        setCurrentTransactions(getInitialTransactions().current);
+        setPreviousTransactions(getInitialTransactions().previous);
+        setSavingsGoals(getInitialSavingsGoals());
+      } finally {
+        if (!cancelled) setIsLoadingAppData(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Demo countdown — starts the first time this tab loads in demo mode,
+  // persisted in sessionStorage so a refresh doesn't reset the clock.
+  useEffect(() => {
+    if (!isDemoMode) return;
+
+    const STORAGE_KEY = 'app_finances_demo_session_start';
+    const DEMO_SESSION_SECONDS = 7 * 60;
+
+    let startedAt = Number(sessionStorage.getItem(STORAGE_KEY));
+    if (!startedAt) {
+      startedAt = Date.now();
+      try {
+        sessionStorage.setItem(STORAGE_KEY, String(startedAt));
       } catch (e) {
         console.error(e);
       }
     }
-  }, [analysisResult]);
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY_GOALS, JSON.stringify(savingsGoals));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [savingsGoals]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY_MODEL, selectedModel);
-    } catch (e) {
-      console.error(e);
-    }
-  }, [selectedModel]);
+    const tick = () => {
+      const elapsedSeconds = (Date.now() - startedAt) / 1000;
+      setDemoSecondsLeft(Math.max(0, Math.ceil(DEMO_SESSION_SECONDS - elapsedSeconds)));
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [isDemoMode]);
 
   // Fetch all statistics from the backend whenever the inputs that affect
   // them change (new/edited transactions, or the anomaly sensitivity slider).
   useEffect(() => {
+    if (isLoadingAppData) return;
     let cancelled = false;
     fetchAnalyticsSummary(currentTransactions, previousTransactions, anomalyThreshold)
       .then((summary) => {
@@ -247,7 +244,7 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [currentTransactions, previousTransactions, anomalyThreshold]);
+  }, [currentTransactions, previousTransactions, anomalyThreshold, isLoadingAppData]);
 
   const categoryStats = analyticsSummary?.categoryStats ?? [];
   const detectedAnomalies = analyticsSummary?.anomalies ?? [];
@@ -354,6 +351,7 @@ export default function App() {
       };
 
       setAnalysisResult(generated);
+      saveAnalysisRemote(generated).catch((err) => console.error('Failed to save analysis:', err));
     } catch (err: any) {
       console.error('Failed to run AI analysis:', err);
       // Fallback deterministic analysis if offline
@@ -431,17 +429,21 @@ export default function App() {
     }
   }, [analyticsSummary]);
 
-  // Handlers for adding transactions
+  // Handlers for adding transactions — update local state immediately
+  // (optimistic), fire the persistence call in the background. A failure
+  // just logs: this is single-user local data, not worth a rollback UI for.
   const handleAddTransaction = (newTx: Omit<Transaction, 'id'>) => {
     const created: Transaction = {
       ...newTx,
       id: `tx-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
     };
     setCurrentTransactions((prev) => [created, ...prev]);
+    createTransaction(created).catch((err) => console.error('Failed to save transaction:', err));
   };
 
   const handleDeleteTransaction = (id: string) => {
     setCurrentTransactions((prev) => prev.filter((t) => t.id !== id));
+    deleteTransactionRemote(id).catch((err) => console.error('Failed to delete transaction:', err));
   };
 
   // Handlers for Savings Goals
@@ -453,48 +455,62 @@ export default function App() {
       contributions: newGoalData.contributions || [],
     };
     setSavingsGoals((prev) => [created, ...prev]);
+    createGoal(created).catch((err) => console.error('Failed to save goal:', err));
   };
 
   const handleUpdateGoal = (updatedGoal: SavingsGoal) => {
     setSavingsGoals((prev) => prev.map((g) => (g.id === updatedGoal.id ? updatedGoal : g)));
+    updateGoalRemote(updatedGoal).catch((err) => console.error('Failed to update goal:', err));
   };
 
   const handleDeleteGoal = (goalId: string) => {
     setSavingsGoals((prev) => prev.filter((g) => g.id !== goalId));
+    deleteGoalRemote(goalId).catch((err) => console.error('Failed to delete goal:', err));
   };
 
   const handleAddContribution = (goalId: string, amount: number, note?: string) => {
+    const optimisticContrib = {
+      id: `contrib-${Date.now()}`,
+      date: new Date().toISOString().split('T')[0],
+      amount,
+      note,
+    };
     setSavingsGoals((prev) =>
-      prev.map((g) => {
-        if (g.id !== goalId) return g;
-        const newContrib = {
-          id: `contrib-${Date.now()}`,
-          date: new Date().toISOString().split('T')[0],
-          amount,
-          note,
-        };
-        return {
-          ...g,
-          currentAmount: g.currentAmount + amount,
-          contributions: [...(g.contributions || []), newContrib],
-        };
-      })
+      prev.map((g) =>
+        g.id === goalId
+          ? {
+              ...g,
+              currentAmount: g.currentAmount + amount,
+              contributions: [...(g.contributions || []), optimisticContrib],
+            }
+          : g
+      )
     );
+    // The server computes the authoritative currentAmount/contribution id
+    // (avoids two near-simultaneous contributions racing each other) — swap
+    // the optimistic version out for the real one once it responds.
+    addContributionRemote(goalId, amount, note)
+      .then((updatedGoal) => {
+        setSavingsGoals((prev) => prev.map((g) => (g.id === goalId ? updatedGoal : g)));
+      })
+      .catch((err) => console.error('Failed to save contribution:', err));
   };
 
   // Reset demo data
   const handleResetDemoData = () => {
     if (window.confirm('¿Restablecer las transacciones de prueba y metas de ahorro a los valores iniciales?')) {
       const initial = getInitialTransactions();
+      const initialGoals = getInitialSavingsGoals();
       setCurrentTransactions(initial.current);
       setPreviousTransactions(initial.previous);
-      setSavingsGoals(getInitialSavingsGoals());
-      localStorage.removeItem(STORAGE_KEY_ANALYSIS);
-      localStorage.removeItem(STORAGE_KEY_GOALS);
+      setSavingsGoals(initialGoals);
       // Nulling this lets the analyticsSummary-driven effect above re-run
       // the analysis once the fresh (post-reset) stats land — no need to
       // guess a delay for the backend round trip.
       setAnalysisResult(null);
+      resetDataRemote(initial.current, initial.previous, initialGoals).catch((err) =>
+        console.error('Failed to reset data on server:', err)
+      );
     }
   };
 
@@ -542,6 +558,38 @@ export default function App() {
   const activeNavItem = navItems.find((item) => item.id === activeTab) || navItems[0];
   const budgetIsOver = totalBudget > 0 && totalSpent > totalBudget;
   const spentIsHigherThanPrevious = totalSpent > totalPreviousSpent;
+
+  if (isLoadingAppData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-paper text-ink-muted text-sm">
+        Cargando tus datos...
+      </div>
+    );
+  }
+
+  if (isDemoMode && demoSecondsLeft === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-paper text-ink p-6">
+        <div className="max-w-sm text-center space-y-4">
+          <AlertTriangle className="w-8 h-8 text-accent mx-auto" />
+          <h1 className="font-bold text-lg">Tu demo de 7 minutos terminó</h1>
+          <p className="text-sm text-ink-muted">
+            Esta es una demostración pública y temporal del Agente Financiero, con datos de ejemplo.
+            Recarga la página para empezar otra vuelta de 7 minutos.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 text-sm font-semibold text-white bg-accent hover:bg-accent/90 rounded-lg transition cursor-pointer"
+          >
+            Reiniciar demo
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const demoMinutes = demoSecondsLeft !== null ? Math.floor(demoSecondsLeft / 60) : 0;
+  const demoSeconds = demoSecondsLeft !== null ? demoSecondsLeft % 60 : 0;
 
   return (
     <div id="financial-agent-app" className="min-h-screen flex bg-paper text-ink transition-colors duration-200">
@@ -625,6 +673,11 @@ export default function App() {
 
       {/* Main column */}
       <div className="flex-1 min-w-0 flex flex-col">
+        {isDemoMode && demoSecondsLeft !== null && (
+          <div className="bg-accent text-white text-xs font-medium text-center py-1.5 px-4 print:hidden">
+            Modo demo público — termina en {demoMinutes}:{demoSeconds.toString().padStart(2, '0')}. Los datos son de ejemplo y se reinician para cada visitante.
+          </div>
+        )}
         {/* Topbar */}
         <header className="sticky top-0 z-30 h-16 shrink-0 bg-paper/95 backdrop-blur-md border-b border-rule transition-colors duration-200 flex items-center justify-between gap-3 px-4 sm:px-6 print:hidden">
           <div className="flex items-center gap-3 min-w-0">
@@ -898,9 +951,13 @@ export default function App() {
         isOpen={isModelSelectorOpen}
         onClose={() => setIsModelSelectorOpen(false)}
         selectedModel={selectedModel}
-        onSelectModel={(newModel) => setSelectedModel(newModel)}
+        onSelectModel={(newModel) => {
+          setSelectedModel(newModel);
+          saveSelectedModelRemote(newModel).catch((err) => console.error('Failed to save model preference:', err));
+        }}
         onReanalyzeWithModel={(newModel) => {
           setSelectedModel(newModel);
+          saveSelectedModelRemote(newModel).catch((err) => console.error('Failed to save model preference:', err));
           runDeepAnalysis(newModel);
         }}
       />
