@@ -26,13 +26,19 @@ COPY server ./server
 COPY --from=frontend-build /app/dist ./dist
 
 ENV PATH="/app/.venv/bin:${PATH}" \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    PORT=8080
 
-EXPOSE 3000
+# Cloud Run injects PORT (usually 8080) and health-checks that exact port —
+# hardcoding a different one here is what made an earlier deploy fail with
+# "container failed to start and listen on the port ... PORT=8080". Shell
+# form (no brackets) is required for ${PORT} to expand; `exec` keeps uvicorn
+# as PID 1 so it gets SIGTERM directly for a clean shutdown.
+EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:3000/api/health', timeout=3)" || exit 1
+    CMD python -c "import os,urllib.request as u; u.urlopen('http://localhost:'+os.environ.get('PORT','8080')+'/api/health', timeout=3)" || exit 1
 
 # GEMINI_API_KEY must be supplied at runtime (docker run -e / --env-file / your
 # platform's secrets), never baked into the image.
-CMD ["uvicorn", "server.main:app", "--host", "0.0.0.0", "--port", "3000"]
+CMD exec uvicorn server.main:app --host 0.0.0.0 --port ${PORT}
